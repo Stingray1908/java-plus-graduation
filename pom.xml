@@ -14,18 +14,19 @@
     <modules>
         <module>ewm-stats-service</module>
         <module>ewm-main-service</module>
-        <module>ewm-main-service/main-client</module>
-        <module>ewm-main-service/main-dto</module>
-        <module>ewm-main-service/main-service</module>
+        <module>infra</module>
+        <module>core</module>
     </modules>
 
-    <groupId>ru.practicum</groupId>
+    <groupId>ru.yandex.practicum</groupId>
     <artifactId>explore-with-me</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

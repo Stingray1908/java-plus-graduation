@@ -5,11 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ru.yandex.practicum</groupId>
-        <artifactId>ewm-main-service</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>infra</artifactId>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>main-client</artifactId>
+    <artifactId>discovery-server</artifactId>
 
 </project>
