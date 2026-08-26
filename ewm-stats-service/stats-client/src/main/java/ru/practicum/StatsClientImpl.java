@@ -1,6 +1,8 @@
 package ru.practicum;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,8 +14,8 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
-@Service
+@Primary
+@Service("StatsClientImpl")
 public class StatsClientImpl implements StatsClient {
 
     private final RestTemplate restTemplate;

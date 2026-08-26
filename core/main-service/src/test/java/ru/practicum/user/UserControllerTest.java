@@ -6,12 +6,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import ru.practicum.StatsClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -34,13 +38,14 @@ class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockBean(name = "StatsClientDiscovery")
+    private StatsClient statsClient;
+
     private static String pattern = "yyyy-MM-dd HH:mm:ss";
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
-    /**
-     * Тест 1: Успешное создание пользователя (201 Created)
-     */
+
     @Test
     void createUser_Success() throws Exception {
         NewUserRequest request = new NewUserRequest();
@@ -56,9 +61,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id").isNumber());
     }
 
-    /**
-     * Тест 2: Дублирование email (409 Conflict)
-     */
+
     @Test
     void createUser_DuplicateEmail_Conflict() throws Exception {
         // Первый запрос — успешный (создаём пользователя)
@@ -86,10 +89,7 @@ class UserControllerTest {
                 .andExpect(isValidTimestampFormat());
     }
 
-    /**
-     * Тест 3: Некорректный запрос (400 Bad Request)
-     * Проверяем валидацию: пустой email и null name
-     */
+
     @Test
     void createUser_InvalidRequest_BadRequest() throws Exception {
         NewUserRequest invalidRequest = new NewUserRequest();
@@ -109,9 +109,7 @@ class UserControllerTest {
                 .andExpect(isValidTimestampFormat());
     }
 
-    /**
-     * Тест 4: Успешное удаление пользователя (204 No Content)
-     */
+
     @Test
     void deleteUser_Success() throws Exception {
         // Сначала создаём пользователя
@@ -141,9 +139,7 @@ class UserControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().isEmpty()));
     }
 
-    /**
-     * Тест 5: Удаление несуществующего пользователя (404 Not Found)
-     */
+
     @Test
     void deleteUser_UserNotFound_404() throws Exception {
         Long nonExistentUserId = 999999L;
@@ -157,9 +153,7 @@ class UserControllerTest {
                 .andExpect(isValidTimestampFormat());
     }
 
-    /**
-     * Тест 6: Удаление с некорректным ID (отрицательный) — 400 Bad Request
-     */
+
     @Test
     void deleteUser_InvalidNegativeId_BadRequest() throws Exception {
         Long negativeUserId = -1L;
@@ -173,9 +167,7 @@ class UserControllerTest {
                 .andExpect(isValidTimestampFormat());
     }
 
-    /**
-     * Тест 7: Получение всех пользователей без параметров (по умолчанию offset=0, size=10)
-     */
+
     @Test
     void getUsers_DefaultParams_Success() throws Exception {
         // Создаём несколько пользователей для тестирования
@@ -190,9 +182,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$[9].id").value(10)); // последний в списке имеет id=10
     }
 
-    /**
-     * Тест 8: Получение пользователей с указанием offset и size
-     */
+
     @Test
     void getUsers_WithFromAndSize_Success() throws Exception {
         createTestUsers(25); // создаём 25 пользователей
@@ -206,9 +196,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$[4].id").value(15)); // последний имеет id=15
     }
 
-    /**
-     * Тест 9: Получение пользователей по ID (с параметром ids)
-     */
+
     @Test
     void getUsers_ByIds_Success() throws Exception {
         // Создаём пользователей и запоминаем их ID
@@ -237,9 +225,7 @@ class UserControllerTest {
         }
     }
 
-    /**
-     * Тест 10: Получение пользователей по ID (без пагинации)
-     */
+
     @Test
     void getUsers_ByIdsWithoutPagination_Success() throws Exception {
         List<Long> allIds = createTestUsersWithIds(20); // создаём 20 пользователей
@@ -258,9 +244,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$[14].id").value(targetIds.get(14))); // Последний ID из targetIds
     }
 
-    /**
-     * Тест 11: Некорректный параметр from (отрицательный) — 400 Bad Request
-     */
+
     @Test
     void getUsers_InvalidNegativeFrom_BadRequest() throws Exception {
         mockMvc.perform(get("/admin/users?offset=-1&size=10")
@@ -272,9 +256,7 @@ class UserControllerTest {
                 .andExpect(isValidTimestampFormat());
     }
 
-    /**
-     * Тест 12: Некорректный параметр size (отрицательный) — 400 Bad Request
-     */
+
     @Test
     void getUsers_InvalidNegativeSize_BadRequest() throws Exception {
         mockMvc.perform(get("/admin/users?offset=0&size=-5")
@@ -287,9 +269,6 @@ class UserControllerTest {
     }
 
 
-    /**
-     * Вспомогательный метод для сериализации объектов в JSON
-     */
     private String asJsonString(Object obj) {
         try {
             return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(obj);
@@ -298,11 +277,6 @@ class UserControllerTest {
         }
     }
 
-    /**
-     * Вспомогательный метод проверки формата LocalDateTime (yyyy-MM-dd HH:mm:ss) в теле ответа
-     *
-     * @return
-     */
     private ResultMatcher isValidTimestampFormat() {
         return result -> {
             try {
@@ -324,9 +298,7 @@ class UserControllerTest {
         };
     }
 
-    /**
-     * Вспомогательный метод: создаёт тестовых пользователей и возвращает их ID
-     */
+
     private List<Long> createTestUsersWithIds(int count) throws Exception {
         List<Long> ids = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
@@ -347,9 +319,7 @@ class UserControllerTest {
         return ids;
     }
 
-    /**
-     * Вспомогательный метод: создаёт тестовых пользователей (без возврата ID)
-     */
+
     private void createTestUsers(int count) throws Exception {
         for (int i = 1; i <= count; i++) {
             NewUserRequest request = new NewUserRequest();

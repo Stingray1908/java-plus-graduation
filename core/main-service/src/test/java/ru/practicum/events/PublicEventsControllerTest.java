@@ -32,7 +32,7 @@ public class PublicEventsControllerTest {
     @MockBean
     private EventsService eventService;
 
-    @MockBean
+    @MockBean(name = "StatsClientDiscovery")
     private StatsClient statsClient;
 
     @Test

@@ -6,7 +6,7 @@ spring:
     name: stats-service
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -15,7 +15,7 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/stats_db
+    url: jdbc:postgresql://localhost:5431/stats_db
     username: dbuser
     password: 12345
   main:

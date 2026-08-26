@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Service
+@Service("StatsClientDiscovery")
 public class StatsClientDiscovery implements StatsClient {
 
     private final RestTemplate restTemplate;

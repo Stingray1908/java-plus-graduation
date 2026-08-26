@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.StatsClient;
 import ru.practicum.categories.Category;
 import ru.practicum.categories.CategoryDto;
 import ru.practicum.categories.CategoryRepository;
@@ -48,6 +49,9 @@ class PrivateEventControllerMockTest {
 
     @MockBean
     private RequestRepository requestRepository;
+
+    @MockBean(name = "StatsClientDiscovery")
+    private StatsClient statsClient;
 
     private static final Long TEST_USER_ID = 1L;
     private static final Long TEST_EVENT_ID = 2L;

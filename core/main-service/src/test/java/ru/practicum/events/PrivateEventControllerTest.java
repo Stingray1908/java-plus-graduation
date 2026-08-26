@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.StatsClient;
 import ru.practicum.categories.Category;
 import ru.practicum.categories.CategoryRepository;
 import ru.practicum.events.dto.UpdateEventUserRequest;
@@ -48,6 +50,9 @@ class PrivateEventControllerTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @MockBean(name = "StatsClientDiscovery")
+    private StatsClient statsClient;
 
     private User user;
     private Event event;
@@ -89,9 +94,7 @@ class PrivateEventControllerTest {
         event = eventRepository.save(event);
     }
 
-    /**
-     * Проверяет успешное обновление события с корректными данными → 200 OK.
-     */
+
     @Test
     void shouldUpdateEventSuccessfully() throws Exception {
         UpdateEventUserRequest request = UpdateEventUserRequest.builder()
@@ -110,9 +113,7 @@ class PrivateEventControllerTest {
                 .andExpect(jsonPath("$.state").value("CANCELED"));
     }
 
-    /**
-     * Проверяет ошибку «событие не найдено» → 404 Not Found.
-     */
+
     @Test
     void shouldReturnNotFoundWhenEventDoesNotExist() throws Exception {
         // Given
@@ -128,9 +129,7 @@ class PrivateEventControllerTest {
                 .andExpect(content().string(containsString("ID 999")));
     }
 
-    /**
-     * Проверяет ошибку «пользователь не инициатор» → 403 Forbidden.
-     */
+
     @Test
     void shouldReturnForbiddenWhenUserIsNotInitiator() throws Exception {
         // Given: создаём другого пользователя
@@ -149,9 +148,7 @@ class PrivateEventControllerTest {
                 .andExpect(content().string(containsString("FORBIDDEN\",\"reason\":\"For the requested operation the conditions are not met.")));
     }
 
-    /**
-     * Проверяет ошибку «статус события не PENDING/CANCELED» → 403 Forbidden.
-     */
+
     @Test
     void shouldReturnForbiddenWhenEventStateInvalid() throws Exception {
         // Given: обновляем событие до статуса PUBLISHED
@@ -170,9 +167,7 @@ class PrivateEventControllerTest {
                 .andExpect(content().string(containsString("status\":\"CONFLICT\",\"reason\":\"Conflict occurred.\",\"message")));
     }
 
-    /**
-     * Проверяет частичное обновление: обновляются только не‑null поля.
-     */
+
     @Test
     void shouldPartiallyUpdateEvent() throws Exception {
         // Given: только аннотация, остальные поля null
@@ -191,9 +186,7 @@ class PrivateEventControllerTest {
                 .andExpect(jsonPath("$.title").value("Test Event"));
     }
 
-    /**
-     * Проверяет ошибку при попытке обновить событие с несуществующей категорией.
-     */
+
     @Test
     void shouldReturnNotFoundWhenCategoryDoesNotExist() throws Exception {
         // Given: указываем несуществующую категорию
@@ -210,9 +203,7 @@ class PrivateEventControllerTest {
                 .andExpect(content().string(containsString("Category with id=999 was not found")));
     }
 
-    /**
-     * Проверяет обновление местоположения события.
-     */
+
     @Test
     void shouldUpdateEventLocationSuccessfully() throws Exception {
         // Given
@@ -235,9 +226,6 @@ class PrivateEventControllerTest {
                 .andExpect(jsonPath("$.location.lon").value(30.34f));
     }
 
-    /**
-     * Проверяет, что null‑поля в запросе не перезаписывают существующие значения.
-     */
     @Test
     void shouldNotUpdateNullFields() throws Exception {
         // Given: только stateAction, все остальные поля null
@@ -257,9 +245,6 @@ class PrivateEventControllerTest {
                         Matchers.startsWith(event.getEventDate().format(FORMATTER))));
     }
 
-    /**
-     * Проверяет успешное получение событий пользователя с пагинацией → 200 OK.
-     */
     @Test
     void shouldGetUserEventsWithPagination() throws Exception {
         // Given: создаём второе событие для того же пользователя
@@ -294,9 +279,6 @@ class PrivateEventControllerTest {
                 .andExpect(jsonPath("$[1].title").value("Test Event"));
     }
 
-    /**
-     * Проверяет получение пустого списка, если у пользователя нет событий → 200 OK с пустым массивом.
-     */
     @Test
     void shouldReturnEmptyListWhenUserHasNoEvents() throws Exception {
         // Given: создаём пользователя без событий
@@ -314,9 +296,7 @@ class PrivateEventControllerTest {
                 .andExpect(content().json("[]")); // пустой массив
     }
 
-    /**
-     * Проверяет валидацию параметра 'from': отрицательное значение → 400 Bad Request.
-     */
+
     @Test
     void shouldReturnBadRequestWhenFromIsNegative() throws Exception {
         // When & Then
@@ -326,9 +306,7 @@ class PrivateEventControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    /**
-     * Проверяет валидацию параметра 'size': ноль или отрицательное значение → 400 Bad Request.
-     */
+
     @Test
     void shouldReturnBadRequestWhenSizeIsInvalid() throws Exception {
         // When & Then: size = 0
@@ -344,11 +322,7 @@ class PrivateEventControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    /**
-     * Проверяет использование значений по умолчанию для пагинации:
-     * - без параметров from/size → 200 OK, возвращает 10 записей (size=10 по умолчанию);
-     * - с параметрами from=0, size=10 → 200 OK, возвращает 10 записей.
-     */
+
     @Test
     void shouldUseDefaultPaginationValues() throws Exception {
         // Given: создаём валидные события для проверки пагинации
@@ -387,9 +361,7 @@ class PrivateEventControllerTest {
                 .andExpect(jsonPath("$[9].title").value("Event 5"));  // 10‑я запись
     }
 
-    /**
-     * Проверяет ошибку «пользователь не инициатор события» → 403 Forbidden.
-     */
+
     @Test
     void shouldReturnForbiddenWhenUserIsNotEventInitiator() throws Exception {
         // Given: создаём другого пользователя и событие для него
@@ -428,9 +400,7 @@ class PrivateEventControllerTest {
     }
 
 
-    /**
-     * Проверяет валидацию параметра userId: некорректный формат → 400 Bad Request.
-     */
+
     @Test
     void shouldReturnBadRequestWhenUserIdIsInvalid() throws Exception {
         // When & Then: передаём строку вместо числа
@@ -438,9 +408,7 @@ class PrivateEventControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    /**
-     * Проверяет валидацию параметра eventId: некорректный формат → 400 Bad Request.
-     */
+
     @Test
     void shouldReturnBadRequestWhenEventIdIsInvalid() throws Exception {
         // When & Then: передаём строку вместо числа
@@ -448,9 +416,6 @@ class PrivateEventControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    /**
-     * Проверяет получение события в статусе CANCELED.
-     */
     @Test
     void shouldGetCancelledEvent() throws Exception {
         // Given: отменяем событие
@@ -463,9 +428,7 @@ class PrivateEventControllerTest {
                 .andExpect(jsonPath("$.state").value("CANCELED"));
     }
 
-    /**
-     * Проверяет получение события с нулевым количеством подтверждённых заявок.
-     */
+
     @Test
     void shouldGetEventWithZeroConfirmedRequests() throws Exception {
         // Given: сбрасываем подтверждённые заявки
@@ -479,3 +442,4 @@ class PrivateEventControllerTest {
     }
 
 }
+

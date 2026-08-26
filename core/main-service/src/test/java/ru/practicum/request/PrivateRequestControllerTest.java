@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.StatsClient;
 import ru.practicum.error.exception.ForbiddenActionException;
 import ru.practicum.error.exception.NotFoundException;
 import ru.practicum.events.EventState;
@@ -35,6 +36,9 @@ class PrivateRequestControllerTest {
 
     @MockBean
     private RequestsService requestsService;
+
+    @MockBean(name = "StatsClientDiscovery")
+    private StatsClient statsClient;
 
     @Test
     void updateRequestStatus_Success() throws Exception {
@@ -171,3 +175,4 @@ class PrivateRequestControllerTest {
                 .andExpect(status().isBadRequest());
     }
 }
+

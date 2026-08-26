@@ -5,8 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.StatsClient;
 import ru.practicum.categories.Category;
 import ru.practicum.categories.CategoryRepository;
 import ru.practicum.events.dto.EventFullDto;
@@ -20,7 +24,6 @@ import ru.practicum.user.UserRepository;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
@@ -35,6 +38,9 @@ class EventsServiceTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @MockBean(name = "StatsClientDiscovery")
+    private StatsClient statsClient;
 
     private User user;
     private Category category;
@@ -55,9 +61,7 @@ class EventsServiceTest {
         category = categoryRepository.save(category);
     }
 
-    /**
-     * Проверяет успешное создание события с корректными данными.
-     */
+
     @Test
     void shouldSaveEventSuccessfully() {
         // Given
@@ -86,9 +90,7 @@ class EventsServiceTest {
         assertEquals(user.getId(), result.getInitiator().getId());
     }
 
-    /**
-     * Проверяет обработку ошибки при отсутствии категории в БД.
-     */
+
     @Test
     void shouldThrowExceptionWhenCategoryNotFound() {
         // Given
@@ -115,9 +117,6 @@ class EventsServiceTest {
         assertEquals(nonExistentCategoryId, exception.getRejectedValue());
     }
 
-    /**
-     * Проверяет валидацию даты события: ошибка, если дата слишком ранняя.
-     */
     @Test
     void shouldThrowExceptionWhenEventDateTooSoon() {
         // Given
@@ -145,9 +144,7 @@ class EventsServiceTest {
         assertEquals(tooSoonDate, exception.getRejectedValue());
     }
 
-    /**
-     * Проверяет обработку ошибки при отсутствии пользователя в БД.
-     */
+
     @Test
     void shouldThrowExceptionWhenUserNotFound() {
         // Given
@@ -173,9 +170,6 @@ class EventsServiceTest {
         assertTrue(exception.getMessage().contains("Пользователь с ID " + nonExistentUserId + " не найден"));
     }
 
-    /**
-     * Проверяет корректное сохранение всех полей события, включая местоположение.
-     */
     @Test
     void shouldSaveAllEventFieldsCorrectly() {
         // Given
@@ -207,4 +201,3 @@ class EventsServiceTest {
         assertEquals(37.987654, result.getLocation().getLon(), 0.000009);
     }
 }
-
