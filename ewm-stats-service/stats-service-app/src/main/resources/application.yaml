@@ -1,27 +1,18 @@
-server:
-  port: 9090
-
-spring:
-  application:
-    name: stats-service
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-  sql:
-    init:
-      mode: always
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5431/stats_db
-    username: dbuser
-    password: 12345
-  main:
-    allow-bean-definition-overriding: true
-
 eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
+
+spring:
+  application:
+    name: stats-service-app
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server

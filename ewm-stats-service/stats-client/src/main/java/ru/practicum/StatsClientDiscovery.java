@@ -23,7 +23,7 @@ public class StatsClientDiscovery implements StatsClient {
 
     private final RestTemplate restTemplate;
     private final DiscoveryClient discoveryClient;
-    private final String serviceId = "stats-service";
+    private final String serviceId = "stats-service-app";
     @Autowired
     private RetryTemplate retryTemplate;
 
