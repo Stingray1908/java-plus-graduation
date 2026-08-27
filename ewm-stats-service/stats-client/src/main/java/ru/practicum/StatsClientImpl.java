@@ -14,7 +14,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-@Primary
+
 @Service("StatsClientImpl")
 public class StatsClientImpl implements StatsClient {
 
@@ -23,7 +23,7 @@ public class StatsClientImpl implements StatsClient {
 
     public StatsClientImpl(
             RestTemplate restTemplate,
-            @Value("${stats.server.url:http://localhost:8081}") String serverUrl
+            @Value("${stats.server.url:http://localhost:9090}") String serverUrl
     ) {
         this.restTemplate = restTemplate;
         this.serverUrl = serverUrl;

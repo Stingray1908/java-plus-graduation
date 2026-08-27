@@ -2,6 +2,7 @@ package ru.practicum.compilation.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+
 @Slf4j
 @Transactional(readOnly = true)
 public class CompilationServiceImpl implements CompilationService {
@@ -33,6 +34,18 @@ public class CompilationServiceImpl implements CompilationService {
     private final RequestRepository requestRepository;
     private final RateRepository rateRepository;
     private final StatsClient statsClient;
+
+    public CompilationServiceImpl(CompilationRepository compilationRepository,
+                                  EventsRepository eventsRepository,
+                                  RequestRepository requestRepository,
+                                  RateRepository rateRepository,
+                                  @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
+        this.compilationRepository = compilationRepository;
+        this.eventsRepository = eventsRepository;
+        this.requestRepository = requestRepository;
+        this.rateRepository = rateRepository;
+        this.statsClient = statsClient;
+    }
 
     /**
      * Создает новую подборку событий.

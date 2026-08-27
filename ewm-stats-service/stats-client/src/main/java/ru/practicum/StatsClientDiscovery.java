@@ -1,5 +1,6 @@
 package ru.practicum;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Slf4j
 @Service("StatsClientDiscovery")
 public class StatsClientDiscovery implements StatsClient {
 
@@ -49,6 +51,11 @@ public class StatsClientDiscovery implements StatsClient {
         return URI.create("http://" + instance.getHost() + ":" + instance.getPort() + path);
     }
 
+    private URI getBaseUri() {
+        ServiceInstance instance = retryTemplate.execute(ctx -> getStatsInstance());
+        return URI.create("http://" + instance.getHost() + ":" + instance.getPort());
+    }
+
     @Override
     public void hit(EndpointHit hit) {
         URI uri = makeStatsUri("/hit");
@@ -59,8 +66,10 @@ public class StatsClientDiscovery implements StatsClient {
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://placeholder") // не используется
-                .path("/stats")
+        URI baseUri = getBaseUri();
+        URI statsUri = baseUri.resolve("/stats");
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUri(statsUri)
                 .queryParam("start", formatter.format(start))
                 .queryParam("end", formatter.format(end))
                 .queryParam("unique", unique != null && unique);
@@ -69,11 +78,12 @@ public class StatsClientDiscovery implements StatsClient {
             builder.queryParam("uris", String.join(",", uris));
         }
 
-        String rawQuery = builder.build().encode().toString().substring(1); // убрать ведущий "/"
-        URI baseUri = makeStatsUri("");
-        URI finalUri = URI.create(baseUri.toString() + "/" + rawQuery.replaceFirst("/", ""));
+        URI finalUri = builder.build().encode().toUri();
 
+        log.debug("Запрос статистики: {}", finalUri);
         ResponseEntity<ViewStats[]> response = restTemplate.getForEntity(finalUri, ViewStats[].class);
-        return List.of(response.getBody());
+
+        ViewStats[] body = response.getBody();
+        return body == null ? List.of() : List.of(body);
     }
 }

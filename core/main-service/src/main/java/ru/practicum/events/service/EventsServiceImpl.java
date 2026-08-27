@@ -8,6 +8,7 @@ import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 import static ru.practicum.events.EventsMapper.*;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 @Slf4j
 public class EventsServiceImpl implements EventsService {
@@ -50,6 +50,17 @@ public class EventsServiceImpl implements EventsService {
     private final EntityManager entityManager;
     private final RateRepository rateRepository; // <--- ДОБАВЛЕНО
     private final ModerationCommentRepository moderationCommentRepository;
+
+    public EventsServiceImpl(EventsRepository eventRepository, CategoryRepository categoryRepository, RequestRepository requestRepository, UserRepository userRepository, @Qualifier("StatsClientDiscovery") StatsClient statsClient, EntityManager entityManager, RateRepository rateRepository, ModerationCommentRepository moderationCommentRepository) {
+        this.eventRepository = eventRepository;
+        this.categoryRepository = categoryRepository;
+        this.requestRepository = requestRepository;
+        this.userRepository = userRepository;
+        this.statsClient = statsClient;
+        this.entityManager = entityManager;
+        this.rateRepository = rateRepository;
+        this.moderationCommentRepository = moderationCommentRepository;
+    }
 
     @Override
     public EventFullDto saveEvent(NewEventDto newEventDto, Long userId) {
