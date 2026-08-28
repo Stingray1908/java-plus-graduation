@@ -9,6 +9,7 @@
 *.rar
 hs_err_pid*
 replay_pid*
+api-tests.yml
 out/
 target/
 !.mvn/wrapper/maven-wrapper.jar
