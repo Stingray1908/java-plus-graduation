@@ -1,16 +1,3 @@
-
-
-
-
-
-
-
-1. Убрать порты перед сдачей
-
-
-
-
-
 docker rm -f postgres
 docker rm -f stats-postgres
 
