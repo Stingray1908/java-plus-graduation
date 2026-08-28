@@ -1,0 +1,53 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - http://localhost:3000
+              - http://localhost:5173
+              - http://localhost:8443
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowed-headers:
+              - '*'
+            exposed-headers:
+              - Location
+            allow-credentials: true
+            max-age: 3600
+      discovery:
+        locator:
+          enabled: false
+
+      routes:
+        - id: MAIN-ADMIN
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/**
+
+        - id: MAIN-EVENTS
+          uri: lb://main-service
+          predicates:
+            - Path=/events/**
+
+        - id: MAIN-CATEGORIES
+          uri: lb://main-service
+          predicates:
+            - Path=/categories/**
+
+        - id: MAIN-COMPILATIONS
+          uri: lb://main-service
+          predicates:
+            - Path=/compilations/**
+
+        - id: MAIN-USERS
+          uri: lb://main-service
+          predicates:
+            - Path=/users/**
