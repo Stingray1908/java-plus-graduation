@@ -12,7 +12,6 @@ public class PrivateRateController {
 
     private final RateService rateService;
 
-    // POST /users/{userId}/events/{eventId}/rate?isLike=true (или false)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void addRate(
@@ -22,7 +21,6 @@ public class PrivateRateController {
         rateService.addRate(userId, eventId, isLike);
     }
 
-    // DELETE /users/{userId}/events/{eventId}/rate
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRate(
