@@ -8,7 +8,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>stats-service-app</artifactId>
+    <artifactId>stats-server</artifactId>
     <packaging>jar</packaging>
 
     <properties>
