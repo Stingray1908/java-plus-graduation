@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
 import ru.practicum.comments.service.CommentService;
+import ru.yandex.practicum.feigns.comments.AdminCommentFeign;
 
 import java.util.List;
 
@@ -15,11 +16,11 @@ import java.util.List;
 @RequestMapping("/admin/comments")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminCommentController {
+public class AdminCommentController implements AdminCommentFeign {
 
     private final CommentService commentService;
 
-    @GetMapping
+    @Override
     public List<CommentDto> getAllComments(
             @RequestParam(required = false) Long eventId,
             @RequestParam(defaultValue = "0") Integer from,
@@ -28,7 +29,7 @@ public class AdminCommentController {
         return commentService.getCommentsByEventId(eventId, from, size);
     }
 
-    @PatchMapping("/{commentId}")
+    @Override
     public CommentDto moderateComment(
             @PathVariable Long commentId,
             @Valid @RequestBody UpdateCommentByModeratorRequest request) {
@@ -37,7 +38,7 @@ public class AdminCommentController {
         return commentService.updateCommentByModerator(null, commentId, request);
     }
 
-    @DeleteMapping("/{commentId}")
+    @Override
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCommentByAdmin(@PathVariable Long commentId) {
         log.info("Админ удаляет комментарий: {}", commentId);

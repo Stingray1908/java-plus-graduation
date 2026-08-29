@@ -9,19 +9,18 @@ import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByAuthorRequest;
 import ru.practicum.comments.service.CommentService;
+import ru.yandex.practicum.feigns.comments.PrivateCommentFeign;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/users/{userId}/events/{eventId}/comments")
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateCommentController {
+public class PrivateCommentController implements PrivateCommentFeign {
 
     private final CommentService commentService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public CommentDto addComment(
             @PathVariable Long userId,
             @PathVariable Long eventId,
@@ -33,13 +32,13 @@ public class PrivateCommentController {
         return comment;
     }
 
-    @GetMapping("/{commentId}")
+    @Override
     public CommentDto getComment(@PathVariable Long commentId) {
         log.info("Запрос на получение комментария: {}", commentId);
         return commentService.getCommentById(commentId);
     }
 
-    @GetMapping
+    @Override
     public List<CommentDto> getComments(
             @PathVariable Long eventId,
             @RequestParam(defaultValue = "0") Integer from,
@@ -49,7 +48,7 @@ public class PrivateCommentController {
         return commentService.getCommentsByEventId(eventId, from, size);
     }
 
-    @PatchMapping("/{commentId}")
+    @Override
     public CommentDto updateComment(
             @PathVariable Long userId,
             @PathVariable Long commentId,
@@ -59,7 +58,7 @@ public class PrivateCommentController {
         return commentService.updateCommentByAuthor(userId, commentId, request);
     }
 
-    @DeleteMapping("/{commentId}")
+    @Override
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(
             @PathVariable Long userId,
