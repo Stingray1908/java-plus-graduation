@@ -1,20 +1,24 @@
 package ru.practicum.compilation.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
-import ru.practicum.compilation.*;
+import ru.practicum.compilation.entity.Compilation;
+import ru.practicum.compilation.mapper.CompilationMapper;
+import ru.practicum.compilation.repo.CompilationRepository;
 import ru.practicum.dto.ViewStats;
 import ru.practicum.error.exception.NotFoundException;
-import ru.practicum.events.Event;
-import ru.practicum.events.EventState;
-import ru.practicum.events.EventsRepository;
-import ru.practicum.rating.RateRepository;
-import ru.practicum.requests.RequestRepository;
+import ru.practicum.events.entity.Event;
+import ru.yandex.practicum.enums.EventState;
+import ru.practicum.events.repo.EventsRepository;
+import ru.practicum.rating.repo.RateRepository;
+import ru.practicum.requests.repo.RequestRepository;
+import ru.yandex.practicum.dto.compilation.CompilationDto;
+import ru.yandex.practicum.dto.compilation.NewCompilationDto;
+import ru.yandex.practicum.dto.compilation.UpdateCompilationRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

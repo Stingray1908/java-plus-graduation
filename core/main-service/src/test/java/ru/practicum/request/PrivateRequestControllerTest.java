@@ -11,7 +11,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.StatsClient;
 import ru.practicum.error.exception.ForbiddenActionException;
 import ru.practicum.error.exception.NotFoundException;
-import ru.practicum.events.EventState;
+import ru.yandex.practicum.dto.request.EventRequestStatusUpdateRequest;
+import ru.yandex.practicum.dto.request.EventRequestStatusUpdateResult;
+import ru.yandex.practicum.dto.request.ParticipationRequestDto;
+import ru.yandex.practicum.enums.EventState;
 import ru.practicum.requests.service.RequestsService;
 
 import java.time.LocalDateTime;

@@ -1,9 +1,9 @@
 package ru.practicum.comments.service;
 
-import ru.practicum.comments.CommentDto;
-import ru.practicum.comments.NewCommentDto;
-import ru.practicum.comments.UpdateCommentByAuthorRequest;
-import ru.practicum.comments.UpdateCommentByModeratorRequest;
+import ru.yandex.practicum.dto.comments.CommentDto;
+import ru.yandex.practicum.dto.comments.NewCommentDto;
+import ru.yandex.practicum.dto.comments.UpdateCommentByAuthorRequest;
+import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
 
 import java.util.List;
 

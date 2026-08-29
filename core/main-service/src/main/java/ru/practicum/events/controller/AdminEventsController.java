@@ -7,8 +7,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.events.dto.EventFullDto;
-import ru.practicum.events.dto.UpdateEventAdminRequest;
+import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
 import ru.practicum.events.service.EventsService;
 
 import java.time.LocalDateTime;

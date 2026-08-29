@@ -1,6 +1,6 @@
 package ru.practicum.subscriptions;
 
-import ru.practicum.events.dto.EventShortDto;
+import ru.yandex.practicum.dto.events.EventShortDto;
 
 import java.util.List;
 

@@ -3,7 +3,7 @@ package ru.practicum.events.service;
 import ru.practicum.error.exception.ForbiddenActionException;
 import ru.practicum.error.exception.NotFoundException;
 import ru.practicum.events.EventsSortType;
-import ru.practicum.events.dto.*;
+import ru.yandex.practicum.dto.events.*;
 
 import java.time.LocalDateTime;
 import java.util.List;

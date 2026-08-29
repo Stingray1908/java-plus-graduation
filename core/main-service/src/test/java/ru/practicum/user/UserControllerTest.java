@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import ru.practicum.StatsClient;
+import ru.yandex.practicum.dto.user.NewUserRequest;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

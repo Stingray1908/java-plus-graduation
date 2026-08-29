@@ -1,8 +1,8 @@
 package ru.practicum.user.service;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import ru.practicum.user.NewUserRequest;
-import ru.practicum.user.UserDto;
+import ru.yandex.practicum.dto.user.NewUserRequest;
+import ru.yandex.practicum.dto.user.UserDto;
 import ru.practicum.error.exception.NotFoundException;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package ru.practicum.events.moderation;
 
-import ru.practicum.events.dto.moderation.ModerationCommentShortDto;
+import ru.yandex.practicum.dto.events.moderation.ModerationCommentShortDto;
 
 import static ru.practicum.common.Constance.FORMATTER;
 

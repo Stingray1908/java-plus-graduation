@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.error.exception.ConflictException;
 import ru.practicum.error.exception.NotFoundException;
-import ru.practicum.events.Event;
-import ru.practicum.events.EventState;
-import ru.practicum.events.EventsRepository;
-import ru.practicum.rating.Rate;
-import ru.practicum.rating.RateRepository;
+import ru.practicum.events.entity.Event;
+import ru.yandex.practicum.enums.EventState;
+import ru.practicum.events.repo.EventsRepository;
+import ru.practicum.rating.entity.Rate;
+import ru.practicum.rating.repo.RateRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
 

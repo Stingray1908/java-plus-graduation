@@ -2,7 +2,7 @@ package ru.practicum.events.moderation;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.events.Event;
+import ru.practicum.events.entity.Event;
 import java.time.LocalDateTime;
 
 @Entity

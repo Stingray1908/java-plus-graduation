@@ -9,6 +9,7 @@ import ru.practicum.compilation.controller.PublicCompilationController;
 import ru.practicum.compilation.service.CompilationService;
 
 import ru.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.dto.compilation.CompilationDto;
 
 import java.util.Collections;
 import java.util.List;

@@ -6,7 +6,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
@@ -14,28 +13,33 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatsClient;
-import ru.practicum.categories.Category;
-import ru.practicum.categories.CategoryRepository;
+import ru.practicum.categories.entity.Category;
+import ru.practicum.categories.repo.CategoryRepository;
 import ru.practicum.dto.ViewStats;
 import ru.practicum.error.exception.ForbiddenActionException;
 import ru.practicum.events.*;
-import ru.practicum.events.dto.*;
 import ru.practicum.error.exception.ConflictException;
 import ru.practicum.error.exception.EventCreationRuleException;
 import ru.practicum.error.exception.NotFoundException;
+import ru.practicum.events.entity.Event;
+import ru.practicum.events.mapper.EventsMapper;
 import ru.practicum.events.moderation.ModerationComment;
 import ru.practicum.events.moderation.ModerationCommentRepository;
-import ru.practicum.rating.RateRepository;
-import ru.practicum.requests.RequestRepository;
+import ru.practicum.events.repo.EventsRepository;
+import ru.practicum.rating.repo.RateRepository;
+import ru.practicum.requests.repo.RequestRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
+import ru.yandex.practicum.dto.events.*;
+import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.enums.StateAction;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.practicum.events.EventsMapper.*;
+import static ru.practicum.events.mapper.EventsMapper.*;
 
 @Service
 @Transactional

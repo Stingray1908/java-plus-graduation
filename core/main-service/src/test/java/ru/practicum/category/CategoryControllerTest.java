@@ -5,9 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.categories.CategoryController;
+import ru.practicum.categories.controller.CategoryController;
 import ru.practicum.categories.service.CategoryService;
-import ru.practicum.categories.CategoryDto;
+import ru.yandex.practicum.dto.categories.CategoryDto;
 
 import java.util.List;
 

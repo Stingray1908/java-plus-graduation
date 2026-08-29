@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.categories.Category;
-import ru.practicum.categories.CategoryMapper;
-import ru.practicum.categories.CategoryRepository;
-import ru.practicum.categories.CategoryDto;
+import ru.practicum.categories.entity.Category;
+import ru.practicum.categories.mapper.CategoryMapper;
+import ru.practicum.categories.repo.CategoryRepository;
+import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.practicum.error.exception.ConflictException;
 import ru.practicum.error.exception.NotFoundException;
 

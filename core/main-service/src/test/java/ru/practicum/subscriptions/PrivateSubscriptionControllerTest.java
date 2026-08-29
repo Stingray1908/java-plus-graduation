@@ -11,11 +11,11 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
-import ru.practicum.categories.Category;
-import ru.practicum.categories.CategoryRepository;
-import ru.practicum.events.Event;
-import ru.practicum.events.EventState;
-import ru.practicum.events.EventsRepository;
+import ru.practicum.categories.entity.Category;
+import ru.practicum.categories.repo.CategoryRepository;
+import ru.practicum.events.entity.Event;
+import ru.yandex.practicum.enums.EventState;
+import ru.practicum.events.repo.EventsRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
 

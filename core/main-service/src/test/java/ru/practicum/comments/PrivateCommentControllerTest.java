@@ -9,6 +9,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.comments.controller.PrivateCommentController;
 import ru.practicum.comments.service.CommentService;
+import ru.yandex.practicum.dto.comments.CommentDto;
+import ru.yandex.practicum.dto.comments.NewCommentDto;
+import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
+import ru.yandex.practicum.enums.CommentStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
