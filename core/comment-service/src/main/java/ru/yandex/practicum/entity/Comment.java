@@ -25,10 +25,10 @@ public class Comment {
     private String text;
 
     @Column(nullable = false)
-    private Long eventId;
+    private Long eventId; //убраны сущности
 
     @Column(nullable = false)
-    private Long authorId;
+    private Long authorId; //убраны сущности
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
