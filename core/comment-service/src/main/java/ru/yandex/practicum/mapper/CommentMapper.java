@@ -5,8 +5,6 @@ import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.enums.CommentStatus;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.entity.Comment;
-import ru.practicum.events.entity.Event;
-import ru.practicum.user.User;
 
 import java.time.LocalDateTime;
 
@@ -18,20 +16,23 @@ public class CommentMapper {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
-                .eventId(comment.getEvent().getId())
-                .authorId(comment.getAuthor().getId())
-                .authorName(comment.getAuthor().getName())
+                .eventId(comment.getEventId())
+                .authorId(comment.getAuthorId())
+
+                //.authorName(comment.getAuthor().getName())
+                // сервис больше не знает про имя
+
                 .status(comment.getStatus())
                 .createdOn(comment.getCreatedOn())
                 .updatedOn(comment.getUpdatedOn())
                 .build();
     }
 
-    public static Comment toComment(NewCommentDto dto, Event event, User author) {
+    public static Comment toComment(NewCommentDto dto, Long eventId, Long authorId) {
         Comment comment = new Comment();
         comment.setText(dto.getText());
-        comment.setEvent(event);
-        comment.setAuthor(author);
+        comment.setEventId(eventId);
+        comment.setAuthorId(authorId);
         comment.setStatus(CommentStatus.PENDING);
         comment.setCreatedOn(LocalDateTime.now());
         return comment;

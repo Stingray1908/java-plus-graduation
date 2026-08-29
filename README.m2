@@ -1,6 +1,25 @@
-docker rm -f postgres
-docker rm -f stats-postgres
 
-docker run -d --name postgres -e POSTGRES_DB=comment_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5432:5432 --restart unless-stopped postgres:15-alpine
-docker run -d --name stats-postgres -e POSTGRES_DB=stats_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5431:5432 --restart unless-stopped postgres:15-alpine
+
+
+
+
+
+
+
+
+
+
+
+1. Защита, пользователь которого не существует не должен писать комментарии
+
+
+
+
+docker rm -f commentServ
+docker rm -f statsServ
+docker rm -f mainServ
+
+docker run -d --name commentServ -e POSTGRES_DB=comment_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5432:5432 --restart unless-stopped postgres:15-alpine
+docker run -d --name statsServ -e POSTGRES_DB=stats_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5431:5432 --restart unless-stopped postgres:15-alpine
+docker run -d --name mainServ -e POSTGRES_DB=ewm_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5430:5432 --restart unless-stopped postgres:15-alpine
 

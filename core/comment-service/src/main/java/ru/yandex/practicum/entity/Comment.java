@@ -3,8 +3,6 @@ package ru.yandex.practicum.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.yandex.practicum.enums.CommentStatus;
-import ru.practicum.events.entity.Event;
-import ru.practicum.user.User;
 
 import java.time.LocalDateTime;
 

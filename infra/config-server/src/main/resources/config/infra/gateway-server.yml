@@ -66,7 +66,7 @@ spring:
         - id: PRIVATE-COMMENT-Reader
           uri: lb://comment-service
           predicates:
-            - Path=/users/**/events/**/comments/**
+            - Path=Path=/users/{userId}/events/{eventId}/comments/**
           filters:
             - name: Retry
               args:
@@ -186,4 +186,4 @@ spring:
         - id: PRIVATE-COMMENT
           uri: lb://comment-service
           predicates:
-            - Path=/users/**/events/**/comments/**
+            - Path=Path=/users/{userId}/events/{eventId}/comments/**

@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@SpringBootApplication(scanBasePackages = "ru.practicum")
+@SpringBootApplication(scanBasePackages = "ru.yandex.practicum")
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

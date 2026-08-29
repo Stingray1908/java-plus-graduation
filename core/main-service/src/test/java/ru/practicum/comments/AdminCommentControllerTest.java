@@ -7,8 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.comments.controller.AdminCommentController;
-import ru.practicum.comments.service.CommentService;
+
 import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
 import ru.yandex.practicum.enums.CommentStatus;

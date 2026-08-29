@@ -74,10 +74,11 @@ public class Event {
     @Column(nullable = false)
     private Long views = 0L;
 
+    // В коде ни одного упоминнания о комментарии, да и знать событию о них не нужно
+    // Разделение ответсвтенности
+
     //@ManyToOne(fetch = FetchType.LAZY)
     //@JoinColumn(name = "comment_id")
     //private Comment comments;
-
-    @Column
 
 }

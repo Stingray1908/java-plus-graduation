@@ -9,10 +9,6 @@ import ru.yandex.practicum.entity.Comment;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.mapper.CommentMapper;
 import ru.yandex.practicum.repo.CommentRepository;
-import ru.practicum.events.entity.Event;
-import ru.practicum.events.repo.EventsRepository;
-import ru.practicum.user.User;
-import ru.practicum.user.UserRepository;
 import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByAuthorRequest;
@@ -21,7 +17,6 @@ import ru.yandex.practicum.enums.CommentStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,16 +26,18 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
-    private final EventsRepository eventsRepository;
 
     @Transactional
     @Override
     public CommentDto addComment(Long userId, Long eventId, NewCommentDto dto) {
-        Optional<User> author = userRepository.findById(userId);
-        Event event = eventsRepository.getReferenceById(eventId);
 
-        Comment comment = CommentMapper.toComment(dto, event, author.orElseThrow());
+        // Убрал проверку, Comment-SERVICE не должен думать об этом
+        // РАЗДЕЛЕНИЕ ОТВЕТСТВЕННОСТИ
+
+        //Optional<User> author = userRepository.findById(userId);
+        //Event event = eventsRepository.getReferenceById(eventId);
+
+        Comment comment = CommentMapper.toComment(dto, eventId, userId);
         Comment saved = commentRepository.save(comment);
 
         return CommentMapper.toCommentDto(saved);
@@ -68,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto updateCommentByAuthor(Long userId, Long commentId, UpdateCommentByAuthorRequest request) {
         Comment comment = commentRepository.findById(commentId).orElseThrow();
 
-        if (!comment.getAuthor().getId().equals(userId)) {
+        if (!comment.getAuthorId().equals(userId)) {
             throw new IllegalArgumentException("Only author can edit comment");
         }
         if (comment.getStatus() != CommentStatus.PENDING && comment.getStatus() != CommentStatus.APPROVED) {
@@ -107,7 +104,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment not found"));
 
-        if (!comment.getAuthor().getId().equals(userId)) {
+        if (!comment.getAuthorId().equals(userId)) {
             throw new IllegalArgumentException("You can only delete your own comments");
         }
         if (comment.getStatus() == CommentStatus.REJECTED) {
