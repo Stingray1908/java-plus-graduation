@@ -3,7 +3,7 @@ package ru.practicum.events.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.categories.entity.Category;
-import ru.practicum.comments.entity.Comment;
+
 import ru.yandex.practicum.enums.EventState;
 import ru.practicum.user.User;
 
@@ -74,7 +74,10 @@ public class Event {
     @Column(nullable = false)
     private Long views = 0L;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
-    private Comment comments;
+    //@ManyToOne(fetch = FetchType.LAZY)
+    //@JoinColumn(name = "comment_id")
+    //private Comment comments;
+
+    @Column
+
 }

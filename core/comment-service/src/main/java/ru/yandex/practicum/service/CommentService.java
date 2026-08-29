@@ -1,4 +1,4 @@
-package ru.practicum.comments.service;
+package ru.yandex.practicum.service;
 
 import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.NewCommentDto;

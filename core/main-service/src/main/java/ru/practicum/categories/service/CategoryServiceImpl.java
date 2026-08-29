@@ -8,8 +8,8 @@ import ru.practicum.categories.entity.Category;
 import ru.practicum.categories.mapper.CategoryMapper;
 import ru.practicum.categories.repo.CategoryRepository;
 import ru.yandex.practicum.dto.categories.CategoryDto;
-import ru.practicum.error.exception.ConflictException;
-import ru.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.error.exception.ConflictException;
+import ru.yandex.practicum.error.exception.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;

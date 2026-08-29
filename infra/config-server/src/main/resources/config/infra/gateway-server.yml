@@ -45,6 +45,42 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
+        - id: ADMIN-COMMENT-Reader
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/comments/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: PRIVATE-COMMENT-Reader
+          uri: lb://comment-service
+          predicates:
+            - Path=/users/**/events/**/comments/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
         - id: MAIN-EVENTS-Reader
           uri: lb://main-service
           predicates:
@@ -141,3 +177,13 @@ spring:
           uri: lb://main-service
           predicates:
             - Path=/users/**
+
+        - id: ADMIN-COMMENT
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/comments/**
+
+        - id: PRIVATE-COMMENT
+          uri: lb://comment-service
+          predicates:
+            - Path=/users/**/events/**/comments/**

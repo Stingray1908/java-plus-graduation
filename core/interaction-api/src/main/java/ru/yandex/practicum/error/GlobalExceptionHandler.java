@@ -1,4 +1,4 @@
-package ru.practicum.error;
+package ru.yandex.practicum.error;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.practicum.error.exception.ConflictException;
-import ru.practicum.error.exception.EventCreationRuleException;
-import ru.practicum.error.exception.ForbiddenActionException;
-import ru.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.error.exception.ConflictException;
+import ru.yandex.practicum.error.exception.EventCreationRuleException;
+import ru.yandex.practicum.error.exception.ForbiddenActionException;
+import ru.yandex.practicum.error.exception.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

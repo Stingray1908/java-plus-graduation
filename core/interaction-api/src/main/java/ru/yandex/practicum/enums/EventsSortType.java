@@ -1,4 +1,4 @@
-package ru.practicum.events;
+package ru.yandex.practicum.enums;
 
 import lombok.Getter;
 

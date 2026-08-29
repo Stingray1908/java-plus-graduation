@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.categories.controller.CategoryController;
 import ru.practicum.categories.service.CategoryService;
 import ru.yandex.practicum.dto.categories.CategoryDto;
+import ru.yandex.practicum.error.exception.NotFoundException;
 
 import java.util.List;
 
@@ -64,7 +65,7 @@ class CategoryControllerTest {
     @Test
     void getCategoryById_notFound_shouldReturn404() throws Exception {
         when(categoryService.getCategoryById(999L))
-                .thenThrow(new ru.practicum.error.exception.NotFoundException("Not found"));
+                .thenThrow(new NotFoundException("Not found"));
 
         mockMvc.perform(get("/categories/999"))
                 .andExpect(status().isNotFound());

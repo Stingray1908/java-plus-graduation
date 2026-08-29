@@ -1,10 +1,10 @@
-package ru.practicum.comments.mapper;
+package ru.yandex.practicum.mapper;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.enums.CommentStatus;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
-import ru.practicum.comments.entity.Comment;
+import ru.yandex.practicum.entity.Comment;
 import ru.practicum.events.entity.Event;
 import ru.practicum.user.User;
 

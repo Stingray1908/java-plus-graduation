@@ -1,14 +1,14 @@
-package ru.practicum.comments.service;
+package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.comments.entity.Comment;
-import ru.practicum.comments.mapper.CommentMapper;
-import ru.practicum.comments.repo.CommentRepository;
-import ru.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.entity.Comment;
+import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.mapper.CommentMapper;
+import ru.yandex.practicum.repo.CommentRepository;
 import ru.practicum.events.entity.Event;
 import ru.practicum.events.repo.EventsRepository;
 import ru.practicum.user.User;

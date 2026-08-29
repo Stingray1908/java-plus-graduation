@@ -1,4 +1,4 @@
-package ru.practicum.comments.repo;
+package ru.yandex.practicum.repo;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.enums.CommentStatus;
-import ru.practicum.comments.entity.Comment;
+import ru.yandex.practicum.entity.Comment;
 
 import java.util.List;
 

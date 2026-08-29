@@ -1,4 +1,4 @@
-package ru.practicum.comments.entity;
+package ru.yandex.practicum.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,13 +24,11 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String text;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
+    @Column(nullable = false)
+    private Long eventId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author;
+    @Column(nullable = false)
+    private Long authorId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

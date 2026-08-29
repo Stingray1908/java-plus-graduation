@@ -13,6 +13,7 @@ import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
 import ru.yandex.practicum.enums.CommentStatus;
+import ru.yandex.practicum.error.exception.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -98,7 +99,7 @@ class PrivateCommentControllerTest {
     @Test
     void getComment_notFound_shouldReturn404() throws Exception {
         when(commentService.getCommentById(999L))
-                .thenThrow(new ru.practicum.error.exception.NotFoundException("Not found"));
+                .thenThrow(new NotFoundException("Not found"));
 
         mockMvc.perform(get("/users/10/events/100/comments/999"))
                 .andExpect(status().isNotFound());

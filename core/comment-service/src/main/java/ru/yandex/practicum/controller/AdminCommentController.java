@@ -1,4 +1,4 @@
-package ru.practicum.comments.controller;
+package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
-import ru.practicum.comments.service.CommentService;
+import ru.yandex.practicum.service.CommentService;
 import ru.yandex.practicum.feigns.comments.AdminCommentFeign;
 
 import java.util.List;

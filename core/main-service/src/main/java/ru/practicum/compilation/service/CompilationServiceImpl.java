@@ -10,7 +10,7 @@ import ru.practicum.compilation.entity.Compilation;
 import ru.practicum.compilation.mapper.CompilationMapper;
 import ru.practicum.compilation.repo.CompilationRepository;
 import ru.practicum.dto.ViewStats;
-import ru.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.practicum.events.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.practicum.events.repo.EventsRepository;
