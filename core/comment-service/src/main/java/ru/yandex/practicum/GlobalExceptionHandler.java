@@ -1,9 +1,8 @@
-package ru.yandex.practicum.error;
+package ru.yandex.practicum;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.coyote.BadRequestException;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.yandex.practicum.error.ErrorResponse;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.EventCreationRuleException;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@SpringBootApplication(scanBasePackages = "ru.yandex.practicum")
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
