@@ -27,13 +27,11 @@ public class ParticipationRequest {
     @Column(name = "created", nullable = false)
     private LocalDateTime created;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
+    @Column(nullable = false)
+    private Long eventId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requester_id", nullable = false)
-    private User requester;
+    @Column(nullable = false)
+    private Long requesterId;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)

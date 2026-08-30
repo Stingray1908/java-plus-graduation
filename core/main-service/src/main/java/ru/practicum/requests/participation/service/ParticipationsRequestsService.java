@@ -68,8 +68,8 @@ public class ParticipationsRequestsService {
 
         // 7. Создаём заявку
         ParticipationRequest request = new ParticipationRequest();
-        request.setEvent(event);
-        request.setRequester(requester);
+        request.setEventId(eventId);
+        request.setRequesterId(userId);
         request.setCreated(LocalDateTime.now());
         log.info("Заявка при создании в методе {}", request);
 
@@ -87,8 +87,8 @@ public class ParticipationsRequestsService {
 
         ParticipationRequest savedRequest = requestRepository.save(request);
 
-        savedRequest.setRequester(requester);
-        savedRequest.setEvent(event);
+        savedRequest.setRequesterId(userId);
+        savedRequest.setEventId(eventId);
         log.debug("Дата создания в БД (после сохранения): {}\nСтроковое представление даты в DTO: {}",
                 request.getCreated(), savedRequest.getCreated().format(FORMATTER));
 
@@ -104,7 +104,7 @@ public class ParticipationsRequestsService {
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found"));
 
         // 2. Проверяем, что запрос принадлежит пользователю
-        if (!request.getRequester().getId().equals(userId)) {
+        if (!request.getRequesterId().equals(userId)) {
             throw new NotFoundException("Request with id=" + requestId + " is not accessible for user " + userId);
         }
 
