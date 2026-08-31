@@ -1,6 +1,7 @@
-package ru.practicum.user;
+package ru.yandex.practicum.mapper;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.entity.User;
 import ru.yandex.practicum.dto.user.NewUserRequest;
 import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.dto.user.UserShortDto;

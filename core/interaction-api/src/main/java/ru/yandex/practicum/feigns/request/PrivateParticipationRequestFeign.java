@@ -1,4 +1,4 @@
-package ru.yandex.practicum.feigns.requests;
+package ru.yandex.practicum.feigns.request;
 
 import jakarta.validation.constraints.Positive;
 import org.springframework.cloud.openfeign.FeignClient;

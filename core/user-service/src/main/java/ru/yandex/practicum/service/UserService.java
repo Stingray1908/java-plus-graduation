@@ -1,4 +1,4 @@
-package ru.practicum.user.service;
+package ru.yandex.practicum.service;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import ru.yandex.practicum.dto.user.NewUserRequest;

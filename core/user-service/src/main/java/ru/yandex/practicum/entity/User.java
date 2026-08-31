@@ -1,4 +1,4 @@
-package ru.practicum.user;
+package ru.yandex.practicum.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

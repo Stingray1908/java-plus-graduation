@@ -1,4 +1,4 @@
-package ru.practicum.user.service;
+package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +8,9 @@ import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.dto.user.NewUserRequest;
 import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.practicum.user.User;
-import ru.practicum.user.UserMapper;
-import ru.practicum.user.UserRepository;
+import ru.yandex.practicum.entity.User;
+import ru.yandex.practicum.mapper.UserMapper;
+import ru.yandex.practicum.repo.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;

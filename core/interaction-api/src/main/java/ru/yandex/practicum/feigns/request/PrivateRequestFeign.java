@@ -1,4 +1,4 @@
-package ru.yandex.practicum.feigns.requests;
+package ru.yandex.practicum.feigns.request;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpStatus;

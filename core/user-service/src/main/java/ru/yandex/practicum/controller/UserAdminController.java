@@ -1,4 +1,4 @@
-package ru.practicum.user;
+package ru.yandex.practicum.controller;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -11,7 +11,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.practicum.user.service.UserService;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
+import ru.yandex.practicum.service.UserService;
 import ru.yandex.practicum.dto.user.NewUserRequest;
 import ru.yandex.practicum.dto.user.UserDto;
 
@@ -22,7 +23,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Validated
-public class UserAdminController {
+public class UserAdminController implements UserAdminFeign {
 
     private final UserService userService;
 
@@ -36,8 +37,7 @@ public class UserAdminController {
      * @return ResponseEntity с UserDto и HTTP‑статусом 201 (CREATED)
      * @throws MethodArgumentNotValidException если данные не прошли валидацию
      */
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
+    @Override
     public UserDto createUser(@Valid @RequestBody NewUserRequest request) {
         log.info("Начата обработка запроса на создание пользователя");
         log.debug("Получены данные для создания пользователя: name='{}', email='{}'",
@@ -62,8 +62,7 @@ public class UserAdminController {
      * @return список UserDto, соответствующий критериям поиска
      * @throws ConstraintViolationException если параметры не прошли валидацию
      */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping
+    @Override
     public List<UserDto> get(
             @RequestParam(name = "ids", required = false) List<Long> ids,
             @RequestParam(defaultValue = "0") @Min(0) int offset,
@@ -89,8 +88,7 @@ public class UserAdminController {
      * @throws NotFoundException если пользователь с указанным ID не найден
      * @throws ConstraintViolationException если ID не прошёл валидацию
      */
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("{userId}")
+    @Override
     public void delete(@PathVariable @Positive Long userId) {
         log.info("Начата обработка запроса на удаление пользователя с ID: {}", userId);
 

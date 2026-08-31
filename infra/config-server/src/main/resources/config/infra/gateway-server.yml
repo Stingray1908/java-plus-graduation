@@ -189,6 +189,24 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
+        - id: USER-Reader
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
         - id: MAIN-ADMIN
           uri: lb://main-service
           predicates:
@@ -233,3 +251,8 @@ spring:
           uri: lb://request-service
           predicates:
             - Path=/users/{userId}/events/{eventId}/requests/**
+
+        - id: USER
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users/**
