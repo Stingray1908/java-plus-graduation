@@ -45,7 +45,7 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: ADMIN-COMMENT-Reader
+        - id: COMMENT-ADMIN-Reader
           uri: lb://comment-service
           predicates:
             - Path=/admin/comments/**
@@ -63,7 +63,7 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: PRIVATE-COMMENT-Reader
+        - id: COMMENT-PRIVATE-Reader
           uri: lb://comment-service
           predicates:
             - Path=Path=/users/{userId}/events/{eventId}/comments/**
@@ -153,6 +153,42 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
+        - id: REQUEST-Reader
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/requests/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: REQUEST-PARTICIPATION-Reader
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/requests/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
         - id: MAIN-ADMIN
           uri: lb://main-service
           predicates:
@@ -178,12 +214,12 @@ spring:
           predicates:
             - Path=/users/**
 
-        - id: ADMIN-COMMENT
+        - id: COMMENT-ADMIN
           uri: lb://comment-service
           predicates:
             - Path=/admin/comments/**
 
-        - id: PRIVATE-COMMENT
+        - id: COMMENT-PRIVATE
           uri: lb://comment-service
           predicates:
             - Path=Path=/users/{userId}/events/{eventId}/comments/**
@@ -192,3 +228,8 @@ spring:
           uri: lb://request-service
           predicates:
             - Path=Path=/users/{userId}/requests/**
+
+        - id: REQUEST-PARTICIPATION
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/requests/**
