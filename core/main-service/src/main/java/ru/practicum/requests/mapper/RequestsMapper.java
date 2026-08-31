@@ -7,7 +7,7 @@ import ru.practicum.requests.entity.ParticipationRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.common.Constance.FORMATTER;
+import static ru.yandex.practicum.Constance.FORMATTER;
 
 @Component
 public class RequestsMapper {

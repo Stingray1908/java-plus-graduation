@@ -1,13 +1,15 @@
 package ru.yandex.practicum.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.requests.entity.ParticipationRequest;
+
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
+import ru.yandex.practicum.entity.ParticipationRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.common.Constance.FORMATTER;
+import static ru.yandex.practicum.Constance.FORMATTER;
+
 
 @Component
 public class RequestsMapper {
@@ -15,9 +17,9 @@ public class RequestsMapper {
     public static ParticipationRequestDto toDto(ParticipationRequest request) {
         return ParticipationRequestDto.builder()
                 .created(request.getCreated().format(FORMATTER))
-                .event(request.getEvent().getId())
+                .event(request.getEventId())
                 .id(request.getId())
-                .requester(request.getRequester().getId())
+                .requester(request.getRequesterId())
                 .status(request.getStatus())
                 .build();
     }

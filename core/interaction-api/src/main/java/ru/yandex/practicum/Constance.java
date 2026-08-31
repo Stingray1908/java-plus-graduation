@@ -1,4 +1,4 @@
-package ru.practicum.common;
+package ru.yandex.practicum;
 
 import java.time.format.DateTimeFormatter;
 

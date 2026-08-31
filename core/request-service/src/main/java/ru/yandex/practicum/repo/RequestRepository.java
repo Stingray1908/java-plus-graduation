@@ -4,7 +4,8 @@ package ru.yandex.practicum.repo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.practicum.requests.entity.ParticipationRequest;
+
+import ru.yandex.practicum.entity.ParticipationRequest;
 import ru.yandex.practicum.enums.EventState;
 
 import java.util.List;

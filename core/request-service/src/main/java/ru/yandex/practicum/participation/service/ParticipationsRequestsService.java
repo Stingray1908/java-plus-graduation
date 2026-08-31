@@ -4,36 +4,29 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.events.entity.Event;
-import ru.practicum.events.repo.EventsRepository;
-import ru.practicum.requests.entity.ParticipationRequest;
-import ru.practicum.requests.mapper.RequestsMapper;
-import ru.practicum.requests.repo.RequestRepository;
-import ru.practicum.user.User;
-import ru.practicum.user.UserRepository;
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
+import ru.yandex.practicum.entity.ParticipationRequest;
 import ru.yandex.practicum.enums.EventState;
-import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.mapper.RequestsMapper;
+import ru.yandex.practicum.repo.RequestRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.common.Constance.FORMATTER;
-import static ru.practicum.requests.mapper.RequestsMapper.toDto;
+import static ru.yandex.practicum.mapper.RequestsMapper.toDto;
+
 
 @AllArgsConstructor
 @Service
 @Slf4j
 public class ParticipationsRequestsService {
 
-    private UserRepository userRepository;
-    private EventsRepository eventsRepository;
     private RequestRepository requestRepository;
 
     @Transactional
     public ParticipationRequestDto createParticipationRequest(Long userId, Long eventId) {
+        /*
         // 1. Проверяем существование пользователя
         User requester = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
@@ -95,6 +88,14 @@ public class ParticipationsRequestsService {
         log.info("Создана заявка на участие с ID: {}, статус: {}", savedRequest.getId(), savedRequest.getStatus());
 
         return toDto(savedRequest);
+        */
+        return ParticipationRequestDto.builder()
+                .created("Заглушка")
+                .event(1L)
+                .id(1L)
+                .requester(1L)
+                .status(EventState.CANCELED)
+                .build();
     }
 
     @Transactional
@@ -126,10 +127,10 @@ public class ParticipationsRequestsService {
     }
 
     public List<ParticipationRequestDto> getUserParticipationRequests(Long userId) {
-        // 1. Проверяем существование пользователя
+       /* // 1. Проверяем существование пользователя
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
-
+*/
         // 2. Получаем все заявки пользователя
         List<ParticipationRequest> requests = requestRepository.findByRequesterId(userId);
 

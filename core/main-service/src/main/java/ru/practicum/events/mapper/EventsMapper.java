@@ -14,7 +14,7 @@ import ru.practicum.user.UserMapper;
 import java.time.LocalDateTime;
 
 import static ru.practicum.categories.mapper.CategoryMapper.toCategoryDto;
-import static ru.practicum.common.Constance.FORMATTER;
+import static ru.yandex.practicum.Constance.FORMATTER;
 import static ru.practicum.events.moderation.ModerationMapper.moderationCommentShortDto;
 
 public class EventsMapper {

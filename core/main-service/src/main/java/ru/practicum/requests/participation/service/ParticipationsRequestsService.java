@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.common.Constance.FORMATTER;
+import static ru.yandex.practicum.Constance.FORMATTER;
 import static ru.practicum.requests.mapper.RequestsMapper.toDto;
 
 @AllArgsConstructor

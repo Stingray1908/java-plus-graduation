@@ -2,7 +2,7 @@ package ru.practicum.events.moderation;
 
 import ru.yandex.practicum.dto.events.moderation.ModerationCommentShortDto;
 
-import static ru.practicum.common.Constance.FORMATTER;
+import static ru.yandex.practicum.Constance.FORMATTER;
 
 public class ModerationMapper {
     public static ModerationCommentShortDto moderationCommentShortDto(ModerationComment mc) {
