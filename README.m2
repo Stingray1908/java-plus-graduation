@@ -14,11 +14,10 @@
 1. Проверка пользователя и события для CommentServiceImpl
 2. Аналогично для ParticipationsRequestsService
 
-
-
-docker rm -f commentServ
-docker rm -f statsServ
 docker rm -f mainServ
+docker rm -f statsServ
+docker rm -f commentServ
+docker rm -f requestServ
 
 docker run -d --name mainServ -e POSTGRES_DB=ewm_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5430:5432 --restart unless-stopped postgres:15-alpine
 docker run -d --name statsServ -e POSTGRES_DB=stats_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5431:5432 --restart unless-stopped postgres:15-alpine

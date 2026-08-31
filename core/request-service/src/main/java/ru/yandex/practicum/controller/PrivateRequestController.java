@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateRequest;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateResult;
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
+import ru.yandex.practicum.feigns.requests.PrivateRequestFeign;
 import ru.yandex.practicum.service.RequestsService;
 
 import java.util.List;
@@ -15,12 +16,11 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events/{eventId}/requests")
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateRequestController {
+public class PrivateRequestController implements PrivateRequestFeign {
 
     private final RequestsService requestsService;
 
-    @PatchMapping
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public EventRequestStatusUpdateResult updateRequestStatus(
             @PathVariable Long userId,
             @PathVariable Long eventId,
@@ -37,8 +37,7 @@ public class PrivateRequestController {
         return result;
     }
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public List<ParticipationRequestDto> getEventRequests(
             @PathVariable Long userId,
             @PathVariable Long eventId) {

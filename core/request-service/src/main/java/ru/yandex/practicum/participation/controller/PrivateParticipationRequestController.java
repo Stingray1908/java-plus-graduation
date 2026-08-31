@@ -3,25 +3,23 @@ package ru.yandex.practicum.participation.controller;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
-import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.feigns.requests.PrivateParticipationRequestFeign;
 import ru.yandex.practicum.participation.service.ParticipationsRequestsService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/users/{userId}/requests") //users/{userId}/events/{eventId}/requests
+@RequestMapping("/users/{userId}/requests")
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateParticipationRequestController {
+public class PrivateParticipationRequestController implements PrivateParticipationRequestFeign {
 
     private final ParticipationsRequestsService participationsRequestsService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public ParticipationRequestDto createParticipationRequest(
             @PathVariable @Positive Long userId,
             @RequestParam @Positive Long eventId) {
@@ -33,8 +31,7 @@ public class PrivateParticipationRequestController {
         return createdRequest;
     }
 
-    @PatchMapping("/{requestId}/cancel")
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public ParticipationRequestDto cancelParticipationRequest(
             @PathVariable Long userId,
             @PathVariable Long requestId) {
@@ -43,8 +40,7 @@ public class PrivateParticipationRequestController {
         return cancelledRequest;
     }
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public List<ParticipationRequestDto> getUserParticipationRequests(
             @PathVariable @Positive Long userId) {
         log.info("Получен запрос на получение заявок пользователя с ID: {}", userId);
