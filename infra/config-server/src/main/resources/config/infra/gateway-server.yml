@@ -187,3 +187,8 @@ spring:
           uri: lb://comment-service
           predicates:
             - Path=Path=/users/{userId}/events/{eventId}/comments/**
+
+        - id: REQUEST
+          uri: lb://request-service
+          predicates:
+            - Path=Path=/users/{userId}/requests/**
