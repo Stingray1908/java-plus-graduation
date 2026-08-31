@@ -1,9 +1,9 @@
-package ru.practicum.events.service;
+package ru.yandex.practicum.service;
 
+import ru.yandex.practicum.dto.events.*;
+import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.enums.EventsSortType;
-import ru.yandex.practicum.dto.events.*;
 
 import java.time.LocalDateTime;
 import java.util.List;

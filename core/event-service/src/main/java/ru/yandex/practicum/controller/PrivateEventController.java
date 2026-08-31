@@ -1,4 +1,4 @@
-package ru.practicum.events.controller;
+package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -7,10 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
 import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
-import ru.practicum.events.service.EventsService;
+import ru.yandex.practicum.service.EventsService;
 
 import java.util.List;
 

@@ -18,6 +18,7 @@
         <module>comment-service</module>
         <module>request-service</module>
         <module>user-service</module>
+        <module>event-service</module>
     </modules>
     <dependencies>
         <dependency>

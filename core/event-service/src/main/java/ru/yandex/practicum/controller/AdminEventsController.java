@@ -1,4 +1,4 @@
-package ru.practicum.events.controller;
+package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -7,9 +7,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
-import ru.practicum.events.service.EventsService;
+import ru.yandex.practicum.service.EventsService;
 
 import java.time.LocalDateTime;
 import java.util.List;

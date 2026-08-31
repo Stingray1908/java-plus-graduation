@@ -1,4 +1,4 @@
-package ru.practicum.events.controller;
+package ru.yandex.practicum.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.*;
@@ -8,10 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.StatsClient;
 import ru.practicum.dto.EndpointHit;
-import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.practicum.events.service.EventsService;
+import ru.yandex.practicum.enums.EventsSortType;
+import ru.yandex.practicum.service.EventsService;
 
 import java.time.LocalDateTime;
 import java.util.List;

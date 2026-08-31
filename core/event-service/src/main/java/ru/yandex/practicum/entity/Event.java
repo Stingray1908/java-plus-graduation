@@ -1,11 +1,10 @@
-package ru.practicum.events.entity;
+package ru.yandex.practicum.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.categories.entity.Category;
-
-import ru.yandex.practicum.enums.EventState;
 import ru.practicum.user.User;
+import ru.yandex.practicum.enums.EventState;
 
 import java.time.LocalDateTime;
 
@@ -26,9 +25,13 @@ public class Event {
     @Column(nullable = false, length = 2000)
     private String annotation;
 
+    /*
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+     */
+    @Column(nullable = false)
+    Long categoryId;
 
     @Column(name = "confirmed_requests", nullable = false)
     private Long confirmedRequests = 0L;
@@ -42,9 +45,13 @@ public class Event {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
+    /*
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
+*/
+    @Column(nullable = false)
+    Long initiatorId;
 
     @Column(name = "location_lat")
     private Float locationLat;

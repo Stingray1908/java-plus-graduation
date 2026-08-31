@@ -1,4 +1,4 @@
-package ru.practicum.events.moderation;
+package ru.yandex.practicum.moderation;
 
 import ru.yandex.practicum.dto.events.moderation.ModerationCommentShortDto;
 

@@ -1,4 +1,4 @@
-package ru.practicum.events.service;
+package ru.yandex.practicum.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -13,33 +13,28 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatsClient;
-import ru.practicum.categories.entity.Category;
-import ru.practicum.categories.repo.CategoryRepository;
 import ru.practicum.dto.ViewStats;
-import ru.yandex.practicum.error.exception.ForbiddenActionException;
-import ru.yandex.practicum.error.exception.ConflictException;
-import ru.yandex.practicum.error.exception.EventCreationRuleException;
-import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.practicum.events.entity.Event;
-import ru.practicum.events.mapper.EventsMapper;
-import ru.practicum.events.moderation.ModerationComment;
-import ru.practicum.events.moderation.ModerationCommentRepository;
-import ru.practicum.events.repo.EventsRepository;
-import ru.practicum.rating.repo.RateRepository;
-import ru.practicum.requests.repo.RequestRepository;
-import ru.practicum.user.User;
-import ru.practicum.user.UserRepository;
 import ru.yandex.practicum.dto.events.*;
+import ru.yandex.practicum.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.enums.StateAction;
+import ru.yandex.practicum.error.exception.ConflictException;
+import ru.yandex.practicum.error.exception.EventCreationRuleException;
+import ru.yandex.practicum.error.exception.ForbiddenActionException;
+import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.moderation.ModerationCommentRepository;
+import ru.yandex.practicum.repo.EventsRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.practicum.events.mapper.EventsMapper.*;
+import static ru.yandex.practicum.mapper.EventsMapper.toShortEventDto;
 
 @Service
 @Transactional

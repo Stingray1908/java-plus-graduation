@@ -1,21 +1,17 @@
-package ru.practicum.events.mapper;
+package ru.yandex.practicum.mapper;
 
-import ru.practicum.categories.entity.Category;
-import ru.yandex.practicum.enums.EventState;
-import ru.yandex.practicum.dto.events.Location;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
+import ru.yandex.practicum.dto.events.Location;
 import ru.yandex.practicum.dto.events.NewEventDto;
-import ru.practicum.events.entity.Event;
-import ru.practicum.events.moderation.ModerationComment;
-import ru.practicum.user.User;
-import ru.practicum.user.UserMapper;
+import ru.yandex.practicum.entity.Event;
+import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.moderation.ModerationComment;
 
 import java.time.LocalDateTime;
 
-import static ru.practicum.categories.mapper.CategoryMapper.toCategoryDto;
 import static ru.yandex.practicum.Constance.FORMATTER;
-import static ru.practicum.events.moderation.ModerationMapper.moderationCommentShortDto;
+import static ru.yandex.practicum.moderation.ModerationMapper.moderationCommentShortDto;
 
 public class EventsMapper {
 
@@ -23,10 +19,14 @@ public class EventsMapper {
         EventShortDto dto = new EventShortDto();
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
-        dto.setCategory(toCategoryDto(event.getCategory()));
+        //dto.setCategory(toCategoryDto(event.getCategory()));
+
+        //Категорию видимо в EventDto будте вызывать Feign
         dto.setConfirmedRequests(confirmedRequests);
         dto.setEventDate(event.getEventDate().format(FORMATTER));
-        dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
+        //dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
+        // feign
+
         dto.setPaid(event.getPaid());
         dto.setTitle(event.getTitle());
         dto.setViews(event.getViews());
@@ -49,12 +49,12 @@ public class EventsMapper {
         EventFullDto dto = new EventFullDto();
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
-        dto.setCategory(toCategoryDto(event.getCategory()));
+        //dto.setCategory(toCategoryDto(event.getCategory()));
         dto.setConfirmedRequests(event.getConfirmedRequests());
         dto.setCreatedOn(format(event.getCreatedOn()));
         dto.setDescription(event.getDescription());
         dto.setEventDate(event.getEventDate().format(FORMATTER));
-        dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
+       // dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
         dto.setLocation(new Location(event.getLocationLat(), event.getLocationLon()));
         dto.setPaid(event.getPaid());
         dto.setParticipantLimit(event.getParticipantLimit());
