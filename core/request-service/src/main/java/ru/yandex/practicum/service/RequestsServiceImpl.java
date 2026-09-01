@@ -3,22 +3,22 @@ package ru.yandex.practicum.service;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.events.entity.Event;
-import ru.practicum.events.repo.EventsRepository;
-import ru.practicum.requests.entity.ParticipationRequest;
-import ru.practicum.requests.mapper.RequestsMapper;
-import ru.practicum.requests.repo.RequestRepository;
-import ru.practicum.requests.service.RequestsService;
-import ru.practicum.user.UserRepository;
+import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateRequest;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateResult;
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
+import ru.yandex.practicum.entity.ParticipationRequest;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.mapper.RequestsMapper;
+import ru.yandex.practicum.repo.RequestRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +28,8 @@ import java.util.List;
 @Transactional
 public class RequestsServiceImpl implements RequestsService {
 
-    private final EventsRepository eventsRepository;
-    private final UserRepository userRepository;
     private final RequestRepository requestRepository;
+    private final EventsAdminFeign eventsAdminFeign;
 
     @Override
     @SneakyThrows
@@ -38,8 +37,7 @@ public class RequestsServiceImpl implements RequestsService {
             Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
 
         // 1. Проверяем существование события и принадлежность пользователю
-        Event event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+        EventFullDto event = getEventById(eventId);
 
         if (!event.getInitiator().getId().equals(userId)) {
             throw new ForbiddenActionException("User is not the initiator of the event");
@@ -105,8 +103,7 @@ public class RequestsServiceImpl implements RequestsService {
     @Override
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
         // 1. Проверяем существование события и принадлежность пользователю
-        Event event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+        EventFullDto event = getEventById(eventId);
 
         if (!event.getInitiator().getId().equals(userId)) {
             throw new ForbiddenActionException("User is not the initiator of the event");
@@ -117,5 +114,13 @@ public class RequestsServiceImpl implements RequestsService {
 
         // 3. Преобразуем в DTO
         return RequestsMapper.toDtoList(requests);
+    }
+
+    private EventFullDto getEventById (Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+        if (!event.getStatusCode().is2xxSuccessful()) {
+            throw new NotFoundException("событие не найдено");
+        }
+        return event.getBody();
     }
 }
