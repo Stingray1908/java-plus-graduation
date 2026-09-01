@@ -5,12 +5,11 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
 import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
+import ru.yandex.practicum.feigns.event.PrivateEventFeign;
 import ru.yandex.practicum.service.EventsService;
 
 import java.util.List;
@@ -19,12 +18,11 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events")
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateEventController {
+public class PrivateEventController implements PrivateEventFeign {
 
     private final EventsService eventsService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public EventFullDto addEvent(
             @Valid @RequestBody NewEventDto newEventDto,
             @PathVariable @Positive Long userId) {
@@ -40,8 +38,7 @@ public class PrivateEventController {
         return savedEvent;
     }
 
-    @PatchMapping("/{eventId}")
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public EventFullDto updateEvent(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId,
@@ -58,8 +55,7 @@ public class PrivateEventController {
         return updatedEvent;
     }
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public List<EventFullDto> getUserEvents(
             @PathVariable @Positive Long userId,
             @RequestParam(defaultValue = "0") @Min(0) Integer from,
@@ -73,8 +69,7 @@ public class PrivateEventController {
         return userEvents;
     }
 
-    @GetMapping("/moderation")
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public List<EventFullDto> getUserModerationHistory(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") Integer from,
@@ -84,8 +79,7 @@ public class PrivateEventController {
         return events;
     }
 
-    @GetMapping("/{eventId}")
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public EventFullDto getUserEventById(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId) {

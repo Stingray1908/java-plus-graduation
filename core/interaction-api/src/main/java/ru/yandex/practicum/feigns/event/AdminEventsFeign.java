@@ -1,28 +1,21 @@
-package ru.yandex.practicum.controller;
+package ru.yandex.practicum.feigns.event;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
-import ru.yandex.practicum.feigns.event.AdminEventsFeign;
-import ru.yandex.practicum.service.EventsService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j
-@RestController
-@RequestMapping("/admin/events")
-@RequiredArgsConstructor
-public class AdminEventsController implements AdminEventsFeign {
+@FeignClient(name = "event-service", path = "/admin/events")
+public interface AdminEventsFeign {
 
-    private final EventsService adminEventService;
-
-    @Override
+    @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
             @RequestParam(required = false) List<Long> users,
             @RequestParam(required = false) List<String> states,
@@ -31,31 +24,18 @@ public class AdminEventsController implements AdminEventsFeign {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size
-    ) {
-        List<EventFullDto> events = adminEventService.getEvents(users, states, categories, rangeStart, rangeEnd, from, size);
-        return ResponseEntity.ok(events);
-    }
+    );
 
-    @Override
+    @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEventByAdmin(
             @PathVariable Long eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateRequest
-    ) {
-        EventFullDto updatedEvent = adminEventService.updateEventByAdmin(eventId, updateRequest);
-        return ResponseEntity.ok(updatedEvent);
-    }
+    );
 
-    @Override
+    @GetMapping("/moderation")
+    @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getEventsForModeration(
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size
-    ) {
-        log.info("Получен запрос на получение списка событий для модерации. Параметры: from={}, size={}", from, size);
-
-        List<EventFullDto> events = adminEventService.getEventsForModeration(from, size);
-
-        log.info("Получен список событий для модерации. Количество элементов: {}", events.size());
-
-        return events;
-    }
+    );
 }

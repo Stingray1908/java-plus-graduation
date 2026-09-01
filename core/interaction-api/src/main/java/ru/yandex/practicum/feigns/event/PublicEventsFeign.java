@@ -1,38 +1,23 @@
-package ru.yandex.practicum.controller;
+package ru.yandex.practicum.feigns.event;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.*;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.practicum.StatsClient;
-import ru.practicum.dto.EndpointHit;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.yandex.practicum.enums.EventsSortType;
-import ru.yandex.practicum.feigns.event.PublicEventsFeign;
-import ru.yandex.practicum.service.EventsService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@RestController
-@RequestMapping("/events")
-public class PublicEventsController implements PublicEventsFeign {
+@FeignClient(name = "event-service", path = "/events")
+public interface PublicEventsFeign {
 
-    private final EventsService eventService;
-    private final StatsClient statsClient;
-
-    public PublicEventsController(
-            EventsService eventService,
-            @Qualifier("StatsClientDiscovery") StatsClient statsClient
-    ) {
-        this.eventService = eventService;
-        this.statsClient = statsClient;
-    }
-
-    @Override
+    @GetMapping
     public ResponseEntity<List<EventShortDto>> getEvents(
             @RequestParam(required = false)
             @Size(max = 1000, message = "Text length must be less than or equal to 1000 characters")
@@ -67,37 +52,11 @@ public class PublicEventsController implements PublicEventsFeign {
             Integer size,
 
             HttpServletRequest request
-    ) {
-        EndpointHit hit = buildHit("event-service", request);
-        statsClient.hit(hit);
+    );
 
-        List<EventShortDto> events = eventService.getPublishedEvents(
-                text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
-                EventsSortType.valueOf(sort), from, size
-        );
-
-        return ResponseEntity.ok(events);
-    }
-
-    @Override
+    @GetMapping("/{id}")
     public ResponseEntity<EventFullDto> getEventById(
             @PathVariable Long id,
             HttpServletRequest request
-    ) {
-        EndpointHit hit = buildHit("event-service", request);
-        statsClient.hit(hit);
-
-        EventFullDto event = eventService.getPublishedEventById(id);
-        return ResponseEntity.ok(event);
-    }
-
-    private EndpointHit buildHit(String appName, HttpServletRequest request) {
-        return EndpointHit.builder()
-                .app(appName)
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
+    );
 }
