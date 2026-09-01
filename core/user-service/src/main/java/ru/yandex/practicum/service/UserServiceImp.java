@@ -23,13 +23,10 @@ public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-
-
     @Override
     public UserDto save(NewUserRequest request) {
         log.info("Начинаем создание нового пользователя: {}", request.getName());
 
-        // Проверяем уникальность email
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("User with email " + request.getEmail() + " already exists");
         }
@@ -46,11 +43,11 @@ public class UserServiceImp implements UserService {
         log.debug("Получен запрос на получение пользователей. IDs: {}, offset: {}, size: {}", ids, offset, size);
 
         if (ids != null && !ids.isEmpty()) {
-            // Возвращаем пользователей по массиву ids
+
             users = userRepository.findByIds(ids);
             log.debug("Найдено {} пользователей по указанным ID", users.size());
         } else {
-            // Возвращаем пользователей с учетом пагинации
+
             users = userRepository.findAllWithOffset(offset, size);
             log.debug("Найдено {} пользователей без фильтрации по ID", users.size());
         }
@@ -76,7 +73,7 @@ public class UserServiceImp implements UserService {
     @Override
     public List<UserDto> getAllInIds(List<Long> ids) {
         return userRepository.findByIds(ids).stream()
-                .map(userMapper::toDt   o)
+                .map(userMapper::toDto)
                 .toList();
     }
 
