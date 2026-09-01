@@ -3,17 +3,25 @@ package ru.yandex.practicum.participation.service;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
+import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.entity.ParticipationRequest;
 import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.mapper.RequestsMapper;
 import ru.yandex.practicum.repo.RequestRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.yandex.practicum.Constance.FORMATTER;
 import static ru.yandex.practicum.mapper.RequestsMapper.toDto;
 
 
@@ -22,18 +30,18 @@ import static ru.yandex.practicum.mapper.RequestsMapper.toDto;
 @Slf4j
 public class ParticipationsRequestsService {
 
-    private RequestRepository requestRepository;
+    private final RequestRepository requestRepository;
+    private final UserAdminFeign userAdminFeign;
+    private final EventsAdminFeign eventsAdminFeign;
 
     @Transactional
     public ParticipationRequestDto createParticipationRequest(Long userId, Long eventId) {
-        /*
+
         // 1. Проверяем существование пользователя
-        User requester = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
+        UserDto requester = getUserById(userId);
 
         // 2. Проверяем существование события
-        Event event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+        EventFullDto event = getEventById(eventId);
 
         // 3. Проверяем, что пользователь не является инициатором события
         if (event.getInitiator().getId().equals(userId)) {
@@ -88,14 +96,6 @@ public class ParticipationsRequestsService {
         log.info("Создана заявка на участие с ID: {}, статус: {}", savedRequest.getId(), savedRequest.getStatus());
 
         return toDto(savedRequest);
-        */
-        return ParticipationRequestDto.builder()
-                .created("Заглушка")
-                .event(1L)
-                .id(1L)
-                .requester(1L)
-                .status(EventState.CANCELED)
-                .build();
     }
 
     @Transactional
@@ -127,10 +127,9 @@ public class ParticipationsRequestsService {
     }
 
     public List<ParticipationRequestDto> getUserParticipationRequests(Long userId) {
-       /* // 1. Проверяем существование пользователя
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
-*/
+        // 1. Проверяем существование пользователя
+        UserDto user = getUserById(userId);
+
         // 2. Получаем все заявки пользователя
         List<ParticipationRequest> requests = requestRepository.findByRequesterId(userId);
 
@@ -138,5 +137,21 @@ public class ParticipationsRequestsService {
         return requests.stream()
                 .map(RequestsMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    private UserDto getUserById (Long id) {
+        UserDto user = userAdminFeign.getById(id);
+        if (user == null) {
+            throw new NotFoundException("пользователь не найден");
+        }
+        return user;
+    }
+
+    private EventFullDto getEventById (Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+        if (!event.getStatusCode().is2xxSuccessful()) {
+            throw new NotFoundException("событие не найдено");
+        }
+        return event.getBody();
     }
 }
