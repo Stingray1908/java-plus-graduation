@@ -49,4 +49,8 @@ public interface UserService {
      * @throws IllegalArgumentException если ID некорректен
      */
     void deleteById(Long id);
+
+    List<UserDto> getAllInIds (List<Long> ids);
+
+    UserDto getById (Long userId);
 }

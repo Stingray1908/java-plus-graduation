@@ -11,17 +11,14 @@ import java.time.LocalDateTime;
 @Component
 public class CommentMapper {
 
-    public static CommentDto toCommentDto(Comment comment) {
-        if (comment == null) return null;
+    public static CommentDto toCommentDto(Comment comment, String author) {
+        if (comment == null || author.isEmpty()) return null;
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
                 .eventId(comment.getEventId())
                 .authorId(comment.getAuthorId())
-
-                //.authorName(comment.getAuthor().getName())
-                // сервис больше не знает про имя
-
+                .authorName(author)
                 .status(comment.getStatus())
                 .createdOn(comment.getCreatedOn())
                 .updatedOn(comment.getUpdatedOn())
@@ -29,6 +26,7 @@ public class CommentMapper {
     }
 
     public static Comment toComment(NewCommentDto dto, Long eventId, Long authorId) {
+        if (dto == null || eventId == null || authorId == null) return null;
         Comment comment = new Comment();
         comment.setText(dto.getText());
         comment.setEventId(eventId);

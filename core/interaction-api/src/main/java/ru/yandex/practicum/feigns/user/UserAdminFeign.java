@@ -25,6 +25,14 @@ public interface UserAdminFeign {
             @RequestParam(defaultValue = "0") @Min(0) int offset,
             @RequestParam(defaultValue = "10") @Min(1) int size);
 
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("{userId}")
+    public UserDto getById(@PathVariable @Positive Long userId);
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("inIds")
+    List<UserDto> getAllInIds(@RequestParam List<Long> ids);
+
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{userId}")
     void delete(@PathVariable @Positive Long userId);

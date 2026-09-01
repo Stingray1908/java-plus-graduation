@@ -13,7 +13,7 @@ import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
 import java.util.List;
 
 @FeignClient(name = "event-service", path = "/users/{userId}/events")
-public interface PrivateEventFeign {
+public interface EventPrivateFeign {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

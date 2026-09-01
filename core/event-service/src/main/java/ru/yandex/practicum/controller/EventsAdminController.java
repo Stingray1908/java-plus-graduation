@@ -8,7 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
-import ru.yandex.practicum.feigns.event.AdminEventsFeign;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.service.EventAdditionalService;
 import ru.yandex.practicum.service.EventsService;
 
 import java.time.LocalDateTime;
@@ -18,9 +19,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/events")
 @RequiredArgsConstructor
-public class AdminEventsController implements AdminEventsFeign {
+public class EventsAdminController implements EventsAdminFeign {
 
     private final EventsService adminEventService;
+    private final EventAdditionalService eventAdditionalService;
+
+    @Override
+    public ResponseEntity<EventFullDto> getEventById(@PathVariable Long eventId){
+        EventFullDto dto = eventAdditionalService.findEventById(eventId);
+        return ResponseEntity.ok(dto);
+    }
 
     @Override
     public ResponseEntity<List<EventFullDto>> getEvents(

@@ -24,6 +24,7 @@ public class UserServiceImp implements UserService {
     private final UserMapper userMapper;
 
 
+
     @Override
     public UserDto save(NewUserRequest request) {
         log.info("Начинаем создание нового пользователя: {}", request.getName());
@@ -70,5 +71,18 @@ public class UserServiceImp implements UserService {
             throw new NotFoundException("Пользователь с id:" + id + " не существует");
         }
         log.info("Пользователь с ID {} успешно удалён", id);
+    }
+
+    @Override
+    public List<UserDto> getAllInIds(List<Long> ids) {
+        return userRepository.findByIds(ids).stream()
+                .map(userMapper::toDt   o)
+                .toList();
+    }
+
+    @Override
+    public UserDto getById(Long userId) {
+        return userMapper.toDto(userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден")));
     }
 }

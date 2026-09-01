@@ -3,6 +3,7 @@ package ru.yandex.practicum.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.*;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +12,8 @@ import ru.practicum.dto.EndpointHit;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.enums.EventsSortType;
-import ru.yandex.practicum.feigns.event.PublicEventsFeign;
+
+import ru.yandex.practicum.feigns.event.EventsPublicFeign;
 import ru.yandex.practicum.service.EventsService;
 
 import java.time.LocalDateTime;
@@ -19,12 +21,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/events")
-public class PublicEventsController implements PublicEventsFeign {
+public class EventsPublicController implements EventsPublicFeign {
 
     private final EventsService eventService;
     private final StatsClient statsClient;
 
-    public PublicEventsController(
+    @Value("${spring.application.name}")
+    private String appName;
+
+    public EventsPublicController(
             EventsService eventService,
             @Qualifier("StatsClientDiscovery") StatsClient statsClient
     ) {
@@ -68,7 +73,7 @@ public class PublicEventsController implements PublicEventsFeign {
 
             HttpServletRequest request
     ) {
-        EndpointHit hit = buildHit("event-service", request);
+        EndpointHit hit = buildHit(request);
         statsClient.hit(hit);
 
         List<EventShortDto> events = eventService.getPublishedEvents(
@@ -84,14 +89,14 @@ public class PublicEventsController implements PublicEventsFeign {
             @PathVariable Long id,
             HttpServletRequest request
     ) {
-        EndpointHit hit = buildHit("event-service", request);
+        EndpointHit hit = buildHit(request);
         statsClient.hit(hit);
 
         EventFullDto event = eventService.getPublishedEventById(id);
         return ResponseEntity.ok(event);
     }
 
-    private EndpointHit buildHit(String appName, HttpServletRequest request) {
+    private EndpointHit buildHit(HttpServletRequest request) {
         return EndpointHit.builder()
                 .app(appName)
                 .uri(request.getRequestURI())

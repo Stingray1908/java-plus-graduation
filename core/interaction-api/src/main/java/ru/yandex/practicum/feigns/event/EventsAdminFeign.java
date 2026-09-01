@@ -13,7 +13,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @FeignClient(name = "event-service", path = "/admin/events")
-public interface AdminEventsFeign {
+public interface EventsAdminFeign {
+
+    @GetMapping("{/eventId}")
+    ResponseEntity<EventFullDto> getEventById(@PathVariable Long eventId);
 
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
@@ -38,4 +41,9 @@ public interface AdminEventsFeign {
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size
     );
+
+    //пишем гет по ид с простым дто, чтобы проверить вообще существует или нет,
+    // и не задействовать стат сервис
+
+
 }

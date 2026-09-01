@@ -3,21 +3,29 @@ package ru.yandex.practicum.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.entity.Comment;
-import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.mapper.CommentMapper;
-import ru.yandex.practicum.repo.CommentRepository;
 import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByAuthorRequest;
 import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
+import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.entity.Comment;
 import ru.yandex.practicum.enums.CommentStatus;
+import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
+import ru.yandex.practicum.mapper.CommentMapper;
+import ru.yandex.practicum.repo.CommentRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -26,21 +34,20 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
+    private final UserAdminFeign userAdminFeign;
+    private final EventsAdminFeign eventsAdminFeign;
 
     @Transactional
     @Override
     public CommentDto addComment(Long userId, Long eventId, NewCommentDto dto) {
 
-        // Убрал проверку, Comment-SERVICE не должен думать об этом
-        // РАЗДЕЛЕНИЕ ОТВЕТСТВЕННОСТИ
-
-        //Optional<User> author = userRepository.findById(userId);
-        //Event event = eventsRepository.getReferenceById(eventId);
+        UserDto user = getUserById(userId);
+        getEventById(eventId);
 
         Comment comment = CommentMapper.toComment(dto, eventId, userId);
         Comment saved = commentRepository.save(comment);
 
-        return CommentMapper.toCommentDto(saved);
+        return CommentMapper.toCommentDto(saved, user.getName());
     }
 
     @Override
@@ -48,16 +55,38 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto getCommentById(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment not found"));
-        return CommentMapper.toCommentDto(comment);
+
+        UserDto user = getUserById(comment.getAuthorId());
+        return CommentMapper.toCommentDto(comment, user.getName());
     }
 
     @Override
     @Transactional
     public List<CommentDto> getCommentsByEventId(Long eventId, Integer from, Integer size) {
         PageRequest page = PageRequest.of(from / size, size);
-        return commentRepository.findByEventIdAndStatus(eventId, CommentStatus.APPROVED, page).stream()
-                .map(CommentMapper::toCommentDto)
-                .collect(Collectors.toList());
+
+        List<Comment> comments = commentRepository.findByEventIdAndStatus(
+                eventId, CommentStatus.APPROVED, page
+        );
+
+        if (comments.isEmpty()) return List.of();
+
+        List<Long> userIds = comments.stream()
+                .map(Comment::getAuthorId)
+                .toList();
+
+        List<UserDto> users = userAdminFeign.getAllInIds(userIds);
+
+        Map<Long, String> authorNameMap = users.stream()
+                .collect(Collectors.toMap(UserDto::getId, UserDto::getName));
+
+        return comments.stream()
+                .map(comment -> {
+                    String authorName = authorNameMap.get(comment.getAuthorId());
+                    return CommentMapper.toCommentDto(comment, authorName);
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     @Override
@@ -77,7 +106,8 @@ public class CommentServiceImpl implements CommentService {
         }
         comment.setUpdatedOn(LocalDateTime.now());
 
-        return CommentMapper.toCommentDto(commentRepository.save(comment));
+        UserDto user = getUserById(commentId);
+        return CommentMapper.toCommentDto(commentRepository.save(comment), user.getName());
     }
 
     @Override
@@ -95,7 +125,8 @@ public class CommentServiceImpl implements CommentService {
         log.info("Comment {} updated by moderator {}: status={}, text={}",
                 saved.getId(), userId, saved.getStatus(), saved.getText());
 
-        return CommentMapper.toCommentDto(saved);
+        UserDto user = getUserById(commentId);
+        return CommentMapper.toCommentDto(saved, user.getName());
     }
 
     @Transactional
@@ -120,5 +151,21 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment not found"));
         commentRepository.deleteById(commentId);
+    }
+
+    private UserDto getUserById (Long id) {
+        UserDto user = userAdminFeign.getById(id);
+        if (user == null) {
+            throw new NotFoundException("пользователь не найден");
+        }
+        return user;
+    }
+
+    private EventFullDto getEventById (Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+        if (!event.getStatusCode().is2xxSuccessful()) {
+            throw new NotFoundException("событие не найдено");
+        }
+        return event.getBody();
     }
 }

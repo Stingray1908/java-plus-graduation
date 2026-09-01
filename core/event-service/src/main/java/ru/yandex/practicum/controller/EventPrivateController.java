@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
 import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
-import ru.yandex.practicum.feigns.event.PrivateEventFeign;
+import ru.yandex.practicum.feigns.event.EventPrivateFeign;
 import ru.yandex.practicum.service.EventsService;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events")
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateEventController implements PrivateEventFeign {
+public class EventPrivateController implements EventPrivateFeign {
 
     private final EventsService eventsService;
 

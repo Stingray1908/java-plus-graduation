@@ -80,6 +80,18 @@ public class UserAdminController implements UserAdminFeign {
         return users;
     }
 
+    @Override
+    public UserDto getById(@PathVariable @Positive Long userId) {
+        UserDto userDto = userService.getById(userId);
+        return userDto;
+    }
+
+    @Override
+    public List<UserDto> getAllInIds(@RequestParam List<Long> ids) {
+        List<UserDto> userDtos = userService.getAllInIds(ids);
+        return userDtos;
+    }
+
     /**
      * Удаляет пользователя по его ID.
      *

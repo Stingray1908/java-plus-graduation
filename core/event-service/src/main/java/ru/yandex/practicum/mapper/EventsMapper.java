@@ -87,13 +87,13 @@ public class EventsMapper {
      * Преобразует DTO нового события в сущность Event.
      *
      * @param dto  DTO с данными нового события
-     * @param user пользователь-инициатор события
+    // * @param user пользователь-инициатор события
      * @return сущность Event, готовая для сохранения в БД
      */
-    public static Event toEvent(NewEventDto dto, User user, Category category) {
+    public static Event toEvent(NewEventDto dto/*, User user, Category category*/) {
         return Event.builder()
                 .annotation(dto.getAnnotation())
-                .category(category)
+              //  .category(category)
                 .description(dto.getDescription())
                 .title(dto.getTitle())
                 .eventDate(dto.getEventDate())
@@ -104,7 +104,7 @@ public class EventsMapper {
                 .locationLon(dto.getLocation().getLon())
                 .createdOn(LocalDateTime.now())
                 .state(EventState.PENDING)
-                .initiator(user)
+               // .initiator(user)
                 .confirmedRequests(0L)
                 .views(0L)
                 .build();

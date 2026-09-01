@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @FeignClient(name = "event-service", path = "/events")
-public interface PublicEventsFeign {
+public interface EventsPublicFeign {
 
     @GetMapping
     public ResponseEntity<List<EventShortDto>> getEvents(
