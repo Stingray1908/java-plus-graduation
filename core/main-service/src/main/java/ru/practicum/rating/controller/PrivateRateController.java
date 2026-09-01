@@ -4,16 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.rating.service.RateService;
+import ru.yandex.practicum.feigns.main.rate.PrivateRateFeign;
 
 @RestController
 @RequestMapping("/users/{userId}/events/{eventId}/rate")
 @RequiredArgsConstructor
-public class PrivateRateController {
+public class PrivateRateController implements PrivateRateFeign {
 
     private final RateService rateService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public void addRate(
             @PathVariable Long userId,
             @PathVariable Long eventId,
@@ -21,8 +21,7 @@ public class PrivateRateController {
         rateService.addRate(userId, eventId, isLike);
     }
 
-    @DeleteMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Override
     public void deleteRate(
             @PathVariable Long userId,
             @PathVariable Long eventId) {

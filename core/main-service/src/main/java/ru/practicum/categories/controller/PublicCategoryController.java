@@ -2,20 +2,24 @@ package ru.practicum.categories.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.categories.CategoryDto;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.categories.service.CategoryService;
+import ru.yandex.practicum.dto.categories.CategoryDto;
+import ru.yandex.practicum.feigns.main.category.PublicCategoryFeign;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
-public class PublicCategoryController {
+public class PublicCategoryController implements PublicCategoryFeign {
 
     private final CategoryService categoryService;
 
-    @GetMapping
+    @Override
     public ResponseEntity<List<CategoryDto>> getCategories(
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size
@@ -24,7 +28,7 @@ public class PublicCategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @GetMapping("/{catId}")
+    @Override
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Long catId) {
         CategoryDto category = categoryService.getCategoryById(catId);
         return ResponseEntity.ok(category);

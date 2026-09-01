@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.dto.events.EventShortDto;
+import ru.yandex.practicum.feigns.main.subscriptions.PrivateSubscriptionFeign;
 
 import java.util.List;
 
@@ -23,11 +24,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Validated
-public class PrivateSubscriptionController {
+public class PrivateSubscriptionController implements PrivateSubscriptionFeign {
     private final SubscriptionService subscriptionService;
 
-    @PostMapping("/{publisherId}")
-    @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public void subscribe(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long publisherId) {
@@ -35,8 +35,7 @@ public class PrivateSubscriptionController {
         subscriptionService.subscribe(userId, publisherId);
     }
 
-    @DeleteMapping("/{publisherId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Override
     public void unsubscribe(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long publisherId) {
@@ -44,8 +43,7 @@ public class PrivateSubscriptionController {
         subscriptionService.unsubscribe(userId, publisherId);
     }
 
-    @GetMapping("/events")
-    @ResponseStatus(HttpStatus.OK)
+    @Override
     public List<EventShortDto> getActualEventsFromSubscriptions(
             @PathVariable @Positive Long userId,
             @RequestParam(defaultValue = "0") @Min(0) int from,
