@@ -27,23 +27,6 @@ spring:
           enabled: false
 
       routes:
-        - id: MAIN-ADMIN-Reader
-          uri: lb://main-service
-          predicates:
-            - Path=/admin/**
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-                methods:
-                  - GET
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
 
         - id: COMMENT-ADMIN-Reader
           uri: lb://comment-service
@@ -81,8 +64,44 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-EVENTS-Reader
-          uri: lb://main-service
+        - id: EVENT-ADMIN-Reader
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: EVENT-PRIVATE-Reader
+          uri: lb://event-service
+          predicates:
+            - Path=/users/{userId}/events/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: EVENT-PUBLIC-Reader
+          uri: lb://event-service
           predicates:
             - Path=/events/**
           filters:
@@ -99,61 +118,7 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-CATEGORIES-Reader
-          uri: lb://main-service
-          predicates:
-            - Path=/categories/**
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-                methods:
-                  - GET
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
-
-        - id: MAIN-COMPILATIONS-Reader
-          uri: lb://main-service
-          predicates:
-            - Path=/compilations/**
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-                methods:
-                  - GET
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
-
-        - id: MAIN-USERS-Reader
-          uri: lb://main-service
-          predicates:
-            - Path=/users/**
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-                methods:
-                  - GET
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
-
-        - id: REQUEST-Reader
+        - id: REQUEST-PRIVATE-Reader
           uri: lb://request-service
           predicates:
             - Path=/users/{userId}/requests/**
@@ -189,7 +154,7 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: USER-Reader
+        - id: USER-ADMIN-Reader
           uri: lb://user-service
           predicates:
             - Path=/admin/users/**
@@ -207,30 +172,59 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-ADMIN
-          uri: lb://main-service
-          predicates:
-            - Path=/admin/**
-
-        - id: MAIN-EVENTS
-          uri: lb://main-service
-          predicates:
-            - Path=/events/**
-
-        - id: MAIN-CATEGORIES
+        - id: MAIN-CATEGORIES-PUBLIC-Reader
           uri: lb://main-service
           predicates:
             - Path=/categories/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
 
-        - id: MAIN-COMPILATIONS
+        - id: MAIN-COMPILATIONS-PUBLIC-Reader
           uri: lb://main-service
           predicates:
             - Path=/compilations/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
 
-        - id: MAIN-USERS
+        - id: MAIN-SUBSCRIPTION-PRIVATE-Reader
           uri: lb://main-service
           predicates:
-            - Path=/users/**
+            - Path=/users/{userId}/subscriptions/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
 
         - id: COMMENT-ADMIN
           uri: lb://comment-service
@@ -242,7 +236,22 @@ spring:
           predicates:
             - Path=Path=/users/{userId}/events/{eventId}/comments/**
 
-        - id: REQUEST
+        - id: EVENT-ADMIN
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**
+
+        - id: EVENT-PRIVATE
+          uri: lb://event-service
+          predicates:
+            - Path=/users/{userId}/events/**
+
+        - id: EVENT-PUBLIC
+          uri: lb://event-service
+          predicates:
+            - Path=/events/**
+
+        - id: REQUEST-PRIVATE
           uri: lb://request-service
           predicates:
             - Path=Path=/users/{userId}/requests/**
@@ -252,7 +261,28 @@ spring:
           predicates:
             - Path=/users/{userId}/events/{eventId}/requests/**
 
-        - id: USER
+        - id: USER-ADMIN
           uri: lb://user-service
           predicates:
             - Path=/admin/users/**
+
+
+        - id: MAIN-CATEGORIES-ADMIN
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/categories/**
+
+        - id: MAIN-COMPILATIONS-ADMIN
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/compilations/**
+
+        - id: MAIN-PRIVATE-SUBSCRIPTIONS
+          uri: lb://main-service
+          predicates:
+            - Path=/users/{userId}/subscriptions/**
+
+        - id: MAIN-RATE-PRIVATE
+          uri: lb://main-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/rate/**
