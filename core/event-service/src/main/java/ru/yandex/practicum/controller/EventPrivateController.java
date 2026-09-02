@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
 import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
+import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.feigns.event.EventPrivateFeign;
 import ru.yandex.practicum.service.EventsService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -93,5 +95,22 @@ public class EventPrivateController implements EventPrivateFeign {
         log.debug("Полные данные найденного события: {}", event);
 
         return event;
+    }
+
+    @Override
+    public List<EventFullDto> findEventsBySubscriberIdAndStatusAndTimeAfter(
+            @PathVariable @Positive Long userId,
+            @RequestParam EventState state,
+            @RequestParam LocalDateTime now,
+            @RequestParam(defaultValue = "0") @Min(0) int from,
+            @RequestParam(defaultValue = "10") @Positive int size) {
+
+        log.info("Получен запрос на получение актуальных опубликованных событий для подписчика с ID: {}, state: {}, now: {}, from: {}, size: {}",
+                userId, state, now, from, size);
+
+        List<EventFullDto> events = eventsService.findActualPublishedEventsBySubscriberId(userId, state, now, from, size);
+
+        log.info("Для подписчика с ID {} найдено {} актуальных опубликованных событий", userId, events.size());
+        return events;
     }
 }

@@ -6,8 +6,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
+import ru.yandex.practicum.enums.EventState;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @FeignClient(name = "main-service", path = "/users/{userId}/subscriptions")

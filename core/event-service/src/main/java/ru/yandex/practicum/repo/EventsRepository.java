@@ -63,7 +63,7 @@ public interface EventsRepository extends JpaRepository<Event, Long>, JpaSpecifi
             "    SELECT s.publisher.id FROM Subscription s WHERE s.subscriber.id = :subscriberId" +
             ") " +
             "ORDER BY e.eventDate DESC")
-    List<Event> findActualPublishedEventsBySubscriberId(
+    List<Event> findEventsBySubscriberIdAndStatusAndTimeAfter(
             @Param("subscriberId") Long subscriberId,
             @Param("state") EventState state,
             @Param("now") LocalDateTime now,

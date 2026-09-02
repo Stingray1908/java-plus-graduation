@@ -2,22 +2,16 @@ package ru.practicum.subscriptions;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.practicum.events.entity.Event;
-import ru.yandex.practicum.enums.EventState;
-import ru.practicum.events.mapper.EventsMapper;
-import ru.practicum.events.repo.EventsRepository;
-import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.practicum.requests.repo.RequestRepository;
-import ru.practicum.user.User;
-import ru.practicum.user.UserRepository;
+import ru.yandex.practicum.feigns.event.EventPrivateFeign;
 import ru.yandex.practicum.feigns.event.EventsAdminFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
@@ -36,6 +30,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final UserAdminFeign userAdminFeign;
     private final EventsAdminFeign eventsAdminFeign;
     private final RequestAdditionalFeign requestAdditionalFeign;
+    private final EventPrivateFeign eventPrivateFeign;
 
     @Override
     public void subscribe(Long userId, Long publisherId) {
@@ -60,8 +55,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public void unsubscribe(Long userId, Long publisherId) {
         log.info("Пользователь с ID {} отписывается от пользователя с ID {}", userId, publisherId);
 
-        findUserById(userId);
-        findUserById(publisherId);
+        getUserById(userId);
+        getUserById(publisherId);
 
         int deleted = subscriptionRepository.deleteBySubscriberIdAndPublisherId(userId, publisherId);
         if (deleted == 0) {
@@ -77,37 +72,38 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public List<EventShortDto> getActualEventsFromSubscriptions(Long userId, int from, int size) {
         log.info("Получение актуальных событий пользователя с ID {}, from: {}, size: {}", userId, from, size);
 
-        findUserById(userId);
+        getUserById(userId);
+        //вызывался из репо
+        // пишем запрос в Феигн
+        // Эвент феигн
+        // эвент сервис
+        // эвент репо
 
-        List<Event> events = eventsRepository.findActualPublishedEventsBySubscriberId(
+        List<EventFullDto> events = eventPrivateFeign.findEventsBySubscriberIdAndStatusAndTimeAfter(
                 userId,
                 EventState.PUBLISHED,
                 LocalDateTime.now(),
-                PageRequest.of(from / size, size)
+                //PageRequest.of(from / size, size)
+                from,
+                size
         );
 
-        Map<Long, Long> confirmedRequests = getConfirmedRequests(events);
+        List<Long> ids = events.stream().map(EventFullDto::getId).toList();
 
-        return events.stream()
+        //Map<Long, Long> confirmedRequests = getConfirmedRequests(ids);
+
+        return eventsAdminFeign.getEventShortDtoByIdsWithStats(ids);
+        /* events.stream()
                 .map(event -> EventsMapper.toShortEventDto(event, confirmedRequests.getOrDefault(event.getId(), 0L)))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
     }
 
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
-    }
-
-    private Map<Long, Long> getConfirmedRequests(List<Event> events) {
-        if (events.isEmpty()) {
+    private Map<Long, Long> getConfirmedRequests(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
             return Map.of();
         }
 
-        List<Long> eventIds = events.stream()
-                .map(Event::getId)
-                .collect(Collectors.toList());
-
-        return requestRepository.countConfirmedRequestsByEventIds(eventIds, EventState.CONFIRMED).stream()
+        return requestAdditionalFeign.countRequestsByEventIdsAndStatus(eventIds, EventState.CONFIRMED).stream()
                 .collect(Collectors.toMap(
                         row -> ((Number) row[0]).longValue(),
                         row -> ((Number) row[1]).longValue()

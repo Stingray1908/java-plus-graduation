@@ -1,6 +1,7 @@
 package ru.yandex.practicum.service;
 
 import ru.yandex.practicum.dto.events.*;
+import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
@@ -65,4 +66,23 @@ public interface EventsService {
     EventFullDto getUserEventById(Long userId, Long eventId);
 
     List<EventFullDto> getEventsForModeration(int from, int size);
+
+    /**
+     * Получает актуальные опубликованные события по ID подписчика.
+     *
+     * @param subscriberId ID подписчика (пользователя, на чьи подписки ориентируемся)
+     * @param state        Требуемый статус события (обычно PUBLISHED)
+     * @param now          Текущая дата/время (для фильтрации событий, которые ещё не прошли)
+     * @param from         Смещение (offset) для пагинации
+     * @param size         Количество записей (limit) для пагинации
+     * @return Список DTO полных событий
+     */
+    List<EventFullDto> findActualPublishedEventsBySubscriberId(
+            Long subscriberId,
+            EventState state,
+            LocalDateTime now,
+            int from,
+            int size
+    );
+
 }

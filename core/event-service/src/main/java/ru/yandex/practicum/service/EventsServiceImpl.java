@@ -53,34 +53,29 @@ public class EventsServiceImpl implements EventsService {
     private final EventsAdminFeign eventsAdminFeign;
     private final CategoryPublicFeign categoryPublicFeign;
     private final EventsRepository eventRepository;
-    private final CategoryRepository categoryRepository;
-    private final RequestRepository requestRepository;
-    private final UserRepository userRepository;
+    private final EventAdditionalService eventAdditionalService;
     private final StatsClient statsClient;
     private final EntityManager entityManager;
-    private final RateRepository rateRepository;
+
     private final ModerationCommentRepository moderationCommentRepository;
 
     public EventsServiceImpl(UserAdminFeign userAdminFeign,
                              EventsAdminFeign eventsAdminFeign, CategoryPublicFeign categoryPublicFeign,
-                             EventsRepository eventRepository,
-                             CategoryRepository categoryRepository,
-                             RequestRepository requestRepository,
-                             UserRepository userRepository,
+                             EventsRepository eventRepository, EventAdditionalService eventAdditionalService,
+
                              @Qualifier("StatsClientDiscovery") StatsClient statsClient,
                              EntityManager entityManager,
-                             RateRepository rateRepository,
+
                              ModerationCommentRepository moderationCommentRepository) {
         this.userAdminFeign = userAdminFeign;
         this.eventsAdminFeign = eventsAdminFeign;
         this.categoryPublicFeign = categoryPublicFeign;
         this.eventRepository = eventRepository;
-        this.categoryRepository = categoryRepository;
-        this.requestRepository = requestRepository;
-        this.userRepository = userRepository;
+        this.eventAdditionalService = eventAdditionalService;
+
         this.statsClient = statsClient;
         this.entityManager = entityManager;
-        this.rateRepository = rateRepository;
+
         this.moderationCommentRepository = moderationCommentRepository;
     }
 
@@ -90,10 +85,10 @@ public class EventsServiceImpl implements EventsService {
         UserDto user = getUserById(userId);
         CategoryDto category = getCategoryById(newEventDto.getCategory());
 
-        Event event = toEvent(newEventDto, user, category);
+        Event event = toEvent(newEventDto, userId, category.getId());
         Event savedEvent = eventRepository.save(event);
-        savedEvent.setInitiator(user);
-        savedEvent.setCategory(category);
+        savedEvent.setInitiatorId(userId);
+        savedEvent.setCategoryId(category.getId());
 
         return toEventFullDto(savedEvent, 0L);
     }
@@ -120,13 +115,16 @@ public class EventsServiceImpl implements EventsService {
                     event.getConfirmedRequests() >= event.getParticipantLimit());
         }
 
-        Map<Long, Long> requestCounts = getConfirmedRequestsMap(events.stream().map(Event::getId).toList());
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+  /*      // рефакторинг
+        Map<Long, Long> requestCounts = getConfirmedRequestsMap(eventIds);
         Map<Long, Long> ratingsMap = getRatingsMap(events);
-
-        List<EventShortDto> dtoList = events.stream()
+*/
+        List<EventShortDto> dtoList = eventAdditionalService.getEventShortDtoByIdsWithStats(eventIds);
+        /*events.stream()
                 .map(event -> toShortEventDto(event, requestCounts.getOrDefault(event.getId(), 0L), ratingsMap.getOrDefault(event.getId(), 0L)))
                 .collect(Collectors.toList());
-
+*/
         if (sort == EventsSortType.VIEWS) {
             dtoList.sort((e1, e2) -> Long.compare(e2.getViews(), e1.getViews()));
         } else if (sort == EventsSortType.RATING) {
@@ -383,7 +381,7 @@ public class EventsServiceImpl implements EventsService {
 
     private CategoryDto getCategoryById(Long categoryId) {
         ResponseEntity<CategoryDto> category = categoryPublicFeign.getCategoryById(categoryId);
-        if(category.getStatusCode().is2xxSuccessful()) {
+        if (category.getStatusCode().is2xxSuccessful()) {
             throw new EventCreationRuleException("categoryId", categoryId,
                     "Категория с ID " + categoryId + " не найдена в базе данных");
         }
@@ -502,7 +500,7 @@ public class EventsServiceImpl implements EventsService {
                 .collect(Collectors.toList());
     }
 
-    private UserDto getUserById (Long id) {
+    private UserDto getUserById(Long id) {
         UserDto user = userAdminFeign.getById(id);
         if (user == null) {
             throw new NotFoundException("пользователь не найден");
@@ -510,11 +508,39 @@ public class EventsServiceImpl implements EventsService {
         return user;
     }
 
-    private EventFullDto getEventById (Long id) {
+    private EventFullDto getEventById(Long id) {
         ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
         if (!event.getStatusCode().is2xxSuccessful()) {
             throw new NotFoundException("событие не найдено");
         }
         return event.getBody();
+    }
+
+    @Override
+    public List<EventFullDto> findActualPublishedEventsBySubscriberId(
+            Long subscriberId,
+            EventState state,
+            LocalDateTime now,
+            int from,
+            int size) {
+
+        log.debug("Запрос актуальных опубликованных событий: subscriberId={}, state={}, now={}, from={}, size={}",
+                subscriberId, state, now, from, size);
+
+        var pageable = PageRequest.of(from / size, size); // корректная пагинация через PageRequest
+
+        // Используем существующий метод репозитория с явной передачей pageable
+        List<Event> events = eventRepository.findEventsBySubscriberIdAndStatusAndTimeAfter(
+                subscriberId,
+                state,
+                now,
+                pageable
+        );
+
+        log.debug("Найдено {} событий для подписчика ID={}", events.size(), subscriberId);
+
+        return events.stream()
+                .map(EventsMapper::toEventFullDto)
+                .collect(Collectors.toList());
     }
 }

@@ -89,10 +89,10 @@ public class EventsMapper {
     // * @param user пользователь-инициатор события
      * @return сущность Event, готовая для сохранения в БД
      */
-    public static Event toEvent(NewEventDto dto/*, User user,  category*/) {
+    public static Event toEvent(NewEventDto dto, Long user, Long category) {
         return Event.builder()
                 .annotation(dto.getAnnotation())
-              //  .category(category)
+                .categoryId(category)
                 .description(dto.getDescription())
                 .title(dto.getTitle())
                 .eventDate(dto.getEventDate())
@@ -103,7 +103,7 @@ public class EventsMapper {
                 .locationLon(dto.getLocation().getLon())
                 .createdOn(LocalDateTime.now())
                 .state(EventState.PENDING)
-               // .initiator(user)
+               .initiatorId(user)
                 .confirmedRequests(0L)
                 .views(0L)
                 .build();

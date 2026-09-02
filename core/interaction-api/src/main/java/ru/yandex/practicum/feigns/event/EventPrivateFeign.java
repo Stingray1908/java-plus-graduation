@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
 import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
+import ru.yandex.practicum.enums.EventState;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @FeignClient(name = "event-service", path = "/users/{userId}/events")
@@ -48,4 +50,14 @@ public interface EventPrivateFeign {
     public EventFullDto getUserEventById(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId);
+
+    @GetMapping("/by-id-status-time")
+    @ResponseStatus(HttpStatus.OK)
+    List<EventFullDto> findEventsBySubscriberIdAndStatusAndTimeAfter(
+            @PathVariable @Positive Long userId,
+            @RequestParam EventState state,
+            @RequestParam LocalDateTime now,
+            @RequestParam(defaultValue = "0") @Min(0) int from,
+            @RequestParam(defaultValue = "10") @Positive int size
+    );
 }

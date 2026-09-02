@@ -2,8 +2,6 @@ package ru.yandex.practicum.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.categories.entity.Category;
-import ru.practicum.user.User;
 import ru.yandex.practicum.enums.EventState;
 
 import java.time.LocalDateTime;
