@@ -10,6 +10,8 @@ import ru.practicum.compilation.entity.Compilation;
 import ru.practicum.compilation.mapper.CompilationMapper;
 import ru.practicum.compilation.repo.CompilationRepository;
 import ru.practicum.dto.ViewStats;
+import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.practicum.events.entity.Event;
 import ru.yandex.practicum.enums.EventState;
@@ -19,6 +21,9 @@ import ru.practicum.requests.repo.RequestRepository;
 import ru.yandex.practicum.dto.compilation.CompilationDto;
 import ru.yandex.practicum.dto.compilation.NewCompilationDto;
 import ru.yandex.practicum.dto.compilation.UpdateCompilationRequest;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
+import ru.yandex.practicum.feigns.request.RequestPrivateFeign;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,17 +39,23 @@ import java.util.stream.Collectors;
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
+    private final RequestPrivateFeign requestPrivateFeign;
+    private final RequestAdditionalFeign requestAdditionalFeign;
+    private final EventsAdminFeign eventsAdminFeign;
     private final EventsRepository eventsRepository;
     private final RequestRepository requestRepository;
     private final RateRepository rateRepository;
     private final StatsClient statsClient;
 
-    public CompilationServiceImpl(CompilationRepository compilationRepository,
+    public CompilationServiceImpl(CompilationRepository compilationRepository, RequestPrivateFeign requestPrivateFeign, RequestAdditionalFeign requestAdditionalFeign, EventsAdminFeign eventsAdminFeign,
                                   EventsRepository eventsRepository,
                                   RequestRepository requestRepository,
                                   RateRepository rateRepository,
                                   @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
         this.compilationRepository = compilationRepository;
+        this.requestPrivateFeign = requestPrivateFeign;
+        this.requestAdditionalFeign = requestAdditionalFeign;
+        this.eventsAdminFeign = eventsAdminFeign;
         this.eventsRepository = eventsRepository;
         this.requestRepository = requestRepository;
         this.rateRepository = rateRepository;
@@ -62,10 +73,11 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto createCompilation(NewCompilationDto dto) {
         log.info("Создание новой подборки: {}", dto.getTitle());
 
-        List<Event> events = new ArrayList<>();
-        if (dto.getEvents() != null && !dto.getEvents().isEmpty()) {
-            events = eventsRepository.findAllById(dto.getEvents());
-        }
+        List<Long> events = new ArrayList<>();
+
+        /*if (dto.getEvents() == null && dto.getEvents().isEmpty()) {
+            //events = eventsAdminFeign.getEventsByIds(dto.getEvents());
+        }*/
 
         Compilation compilation = CompilationMapper.toCompilation(dto, events);
         Compilation saved = compilationRepository.save(compilation);
@@ -180,23 +192,39 @@ public class CompilationServiceImpl implements CompilationService {
      * @return список DTO с данными подборок и статистикой
      */
     private List<CompilationDto> mapToDtoListWithStats(List<Compilation> compilations) {
-        List<Event> allEvents = compilations.stream()
-                .flatMap(c -> c.getEvents().stream())
+        List<Long> allEvents = compilations.stream()
+                .flatMap(c -> c.getEventIds().stream())
                 .distinct()
                 .collect(Collectors.toList());
 
         Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(allEvents);
         Map<Long, Long> views = getViewsMap(allEvents);
         Map<Long, Long> ratings = getRatingsMap(allEvents);
-
+        //List<EventShortDto> eventShortDtos = mapToEventShortDto(compilations)
+        // тут нужно создать мапу идподборки, набор ее ид событий
+        //отправляем эту мапу в сервис событий для получения мапы идПодборки/листКороткихДтоСобытий
         return compilations.stream()
                 .map(comp -> CompilationMapper.toCompilationDto(comp, confirmedRequests, views, ratings))
                 .collect(Collectors.toList());
     }
 
-    private Map<Long, Long> getRatingsMap(List<Event> events) {
-        if (events.isEmpty()) return Map.of();
-        List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
+    private List<EventShortDto> mapToEventShortDto(Compilation compilation, Map<Long, Long> confirmedRequests,
+                                                   Map<Long, Long> views, Map<Long, Long> ratings) {
+        List<EventShortDto> shortEvents = compilation.getEventIds().stream()
+                .map(event -> {
+                    EventShortDto shortDto = EventsMapper.toShortEventDto(
+                            event,
+                            confirmedRequestsMap.getOrDefault(event.getId(), 0L),
+                            ratingsMap.getOrDefault(event.getId(), 0L)
+                    );
+                    shortDto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
+                    return shortDto;
+                })
+    }
+
+    private Map<Long, Long> getRatingsMap(List<Long> eventIds) {
+        if (eventIds.isEmpty()) return Map.of();
+
         List<Object[]> results = rateRepository.getRatingsForEvents(eventIds);
         return results.stream().collect(Collectors.toMap(
                 row -> ((Number) row[0]).longValue(),
@@ -210,14 +238,10 @@ public class CompilationServiceImpl implements CompilationService {
      * @param events список событий
      * @return карта, где ключ - идентификатор события, значение - количество подтвержденных запросов
      */
-    private Map<Long, Long> getConfirmedRequestsMap(List<Event> events) {
+    private Map<Long, Long> getConfirmedRequestsMap(List<Long> events) {
         if (events.isEmpty()) return Map.of();
 
-        List<Long> eventIds = events.stream()
-                .map(Event::getId)
-                .collect(Collectors.toList());
-
-        List<Object[]> results = requestRepository.countConfirmedRequestsByEventIds(eventIds, EventState.CONFIRMED);
+        List<Object[]> results = requestAdditionalFeign.countRequestsByEventIdsAndStatus(events, EventState.CONFIRMED);
 
         return results.stream()
                 .collect(Collectors.toMap(
@@ -232,11 +256,11 @@ public class CompilationServiceImpl implements CompilationService {
      * @param events список событий
      * @return карта, где ключ - идентификатор события, значение - количество просмотров
      */
-    private Map<Long, Long> getViewsMap(List<Event> events) {
+    private Map<Long, Long> getViewsMap(List<Long> events) {
         if (events.isEmpty()) return Map.of();
 
         List<String> uris = events.stream()
-                .map(e -> "/events/" + e.getId())
+                .map(e -> "/events/" + e)
                 .collect(Collectors.toList());
 
         LocalDateTime start = LocalDateTime.now().minusYears(10);

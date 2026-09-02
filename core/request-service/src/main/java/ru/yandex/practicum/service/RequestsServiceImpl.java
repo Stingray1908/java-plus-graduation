@@ -123,4 +123,8 @@ public class RequestsServiceImpl implements RequestsService {
         }
         return event.getBody();
     }
+
+    public List<Object[]> countRequestsByEventIdsAndStatus(List<Long> eventIds, EventState status){
+        return requestRepository.countRequestsByEventIdsAndStatus(eventIds, status);
+    }
 }

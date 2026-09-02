@@ -42,6 +42,10 @@ public interface EventsAdminFeign {
             @RequestParam(defaultValue = "10") Integer size
     );
 
+    @GetMapping("all-in")
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventFullDto> getEventsByIds(
+            @RequestParam List<Long> ids);
     //пишем гет по ид с простым дто, чтобы проверить вообще существует или нет,
     // и не задействовать стат сервис
 

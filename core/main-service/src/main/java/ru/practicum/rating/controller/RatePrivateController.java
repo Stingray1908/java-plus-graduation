@@ -1,15 +1,19 @@
 package ru.practicum.rating.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.rating.service.RateService;
-import ru.yandex.practicum.feigns.main.rate.PrivateRateFeign;
+import ru.yandex.practicum.feigns.main.rate.RatePrivateFeign;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users/{userId}/events/{eventId}/rate")
 @RequiredArgsConstructor
-public class PrivateRateController implements PrivateRateFeign {
+public class RatePrivateController implements RatePrivateFeign {
 
     private final RateService rateService;
 

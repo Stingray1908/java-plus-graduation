@@ -11,10 +11,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatsClient;
 import ru.practicum.dto.ViewStats;
+import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
+import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
@@ -23,6 +26,11 @@ import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.EventCreationRuleException;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.main.category.CategoryPublicFeign;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
+import ru.yandex.practicum.mapper.EventsMapper;
+import ru.yandex.practicum.moderation.ModerationComment;
 import ru.yandex.practicum.moderation.ModerationCommentRepository;
 import ru.yandex.practicum.repo.EventsRepository;
 
@@ -34,23 +42,38 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.mapper.EventsMapper.toShortEventDto;
+import static ru.yandex.practicum.mapper.EventsMapper.*;
 
 @Service
 @Transactional
 @Slf4j
 public class EventsServiceImpl implements EventsService {
     private static final int MIN_HOURS_BEFORE_EVENT = 2;
+    private final UserAdminFeign userAdminFeign;
+    private final EventsAdminFeign eventsAdminFeign;
+    private final CategoryPublicFeign categoryPublicFeign;
     private final EventsRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final StatsClient statsClient;
     private final EntityManager entityManager;
-    private final RateRepository rateRepository; // <--- ДОБАВЛЕНО
+    private final RateRepository rateRepository;
     private final ModerationCommentRepository moderationCommentRepository;
 
-    public EventsServiceImpl(EventsRepository eventRepository, CategoryRepository categoryRepository, RequestRepository requestRepository, UserRepository userRepository, @Qualifier("StatsClientDiscovery") StatsClient statsClient, EntityManager entityManager, RateRepository rateRepository, ModerationCommentRepository moderationCommentRepository) {
+    public EventsServiceImpl(UserAdminFeign userAdminFeign,
+                             EventsAdminFeign eventsAdminFeign, CategoryPublicFeign categoryPublicFeign,
+                             EventsRepository eventRepository,
+                             CategoryRepository categoryRepository,
+                             RequestRepository requestRepository,
+                             UserRepository userRepository,
+                             @Qualifier("StatsClientDiscovery") StatsClient statsClient,
+                             EntityManager entityManager,
+                             RateRepository rateRepository,
+                             ModerationCommentRepository moderationCommentRepository) {
+        this.userAdminFeign = userAdminFeign;
+        this.eventsAdminFeign = eventsAdminFeign;
+        this.categoryPublicFeign = categoryPublicFeign;
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.requestRepository = requestRepository;
@@ -64,8 +87,8 @@ public class EventsServiceImpl implements EventsService {
     @Override
     public EventFullDto saveEvent(NewEventDto newEventDto, Long userId) {
         validateEventDate(newEventDto.getEventDate());
-        User user = findUserById(userId);
-        Category category = findCategoryById(newEventDto.getCategory());
+        UserDto user = getUserById(userId);
+        CategoryDto category = getCategoryById(newEventDto.getCategory());
 
         Event event = toEvent(newEventDto, user, category);
         Event savedEvent = eventRepository.save(event);
@@ -97,7 +120,7 @@ public class EventsServiceImpl implements EventsService {
                     event.getConfirmedRequests() >= event.getParticipantLimit());
         }
 
-        Map<Long, Long> requestCounts = getRequestCounts(events.stream().map(Event::getId).toList());
+        Map<Long, Long> requestCounts = getConfirmedRequestsMap(events.stream().map(Event::getId).toList());
         Map<Long, Long> ratingsMap = getRatingsMap(events);
 
         List<EventShortDto> dtoList = events.stream()
@@ -358,15 +381,13 @@ public class EventsServiceImpl implements EventsService {
         }
     }
 
-    private Category findCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new EventCreationRuleException("categoryId", categoryId,
-                        "Категория с ID " + categoryId + " не найдена в базе данных"));
-    }
-
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+    private CategoryDto getCategoryById(Long categoryId) {
+        ResponseEntity<CategoryDto> category = categoryPublicFeign.getCategoryById(categoryId);
+        if(category.getStatusCode().is2xxSuccessful()) {
+            throw new EventCreationRuleException("categoryId", categoryId,
+                    "Категория с ID " + categoryId + " не найдена в базе данных");
+        }
+        return category.getBody();
     }
 
     private void setViewsToEvent(Event event) {
@@ -382,11 +403,14 @@ public class EventsServiceImpl implements EventsService {
         }
     }
 
-    private Map<Long, Long> getConfirmedRequestsMap(List<Event> events) {
+    private Map<Long, Long> getConfirmedRequestsMap(List<Long> events) {
         if (events.isEmpty()) return Map.of();
-        List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
-        return requestRepository.countConfirmedRequestsByEventIds(eventIds, EventState.CONFIRMED).stream()
-                .collect(Collectors.toMap(r -> ((Number) r[0]).longValue(), r -> ((Number) r[1]).longValue()));
+
+        return request.countRequestsByEventIdsAndStatus(eventIds, EventState.CONFIRMED).stream()
+                .collect(Collectors.toMap(
+                        r -> ((Number) r[0]).longValue(),
+                        r -> ((Number) r[1]).longValue()
+                ));
     }
 
     private void setViewsToEvents(List<Event> events) {
@@ -476,5 +500,21 @@ public class EventsServiceImpl implements EventsService {
         return events.stream()
                 .map(EventsMapper::toEventFullDto)
                 .collect(Collectors.toList());
+    }
+
+    private UserDto getUserById (Long id) {
+        UserDto user = userAdminFeign.getById(id);
+        if (user == null) {
+            throw new NotFoundException("пользователь не найден");
+        }
+        return user;
+    }
+
+    private EventFullDto getEventById (Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+        if (!event.getStatusCode().is2xxSuccessful()) {
+            throw new NotFoundException("событие не найдено");
+        }
+        return event.getBody();
     }
 }

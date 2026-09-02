@@ -9,6 +9,7 @@ import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.moderation.ModerationComment;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static ru.yandex.practicum.Constance.FORMATTER;
 import static ru.yandex.practicum.moderation.ModerationMapper.moderationCommentShortDto;
@@ -19,23 +20,21 @@ public class EventsMapper {
         EventShortDto dto = new EventShortDto();
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
-        //dto.setCategory(toCategoryDto(event.getCategory()));
-
-        //Категорию видимо в EventDto будте вызывать Feign
         dto.setConfirmedRequests(confirmedRequests);
         dto.setEventDate(event.getEventDate().format(FORMATTER));
-        //dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
-        // feign
-
         dto.setPaid(event.getPaid());
         dto.setTitle(event.getTitle());
-        dto.setViews(event.getViews());
+        //dto.setCategory(toCategoryDto(event.getCategory()));
+        //dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
+
+
         return dto;
     }
 
-    public static EventShortDto toShortEventDto(Event event, Long confirmedRequests, Long rating) {
+    public static EventShortDto toShortEventDto(Event event, Long confirmedRequests, Long rating, Long views) {
         EventShortDto dto = toShortEventDto(event, confirmedRequests);
         dto.setRating(rating != null ? rating : 0L);
+        dto.setViews(views != null ? views : 0L);
         return dto;
     }
 
@@ -90,7 +89,7 @@ public class EventsMapper {
     // * @param user пользователь-инициатор события
      * @return сущность Event, готовая для сохранения в БД
      */
-    public static Event toEvent(NewEventDto dto/*, User user, Category category*/) {
+    public static Event toEvent(NewEventDto dto/*, User user,  category*/) {
         return Event.builder()
                 .annotation(dto.getAnnotation())
               //  .category(category)

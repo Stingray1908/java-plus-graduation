@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.categories.service.CategoryService;
 import ru.yandex.practicum.dto.categories.CategoryDto;
-import ru.yandex.practicum.feigns.main.category.AdminCategoryFeign;
+import ru.yandex.practicum.feigns.main.category.CategoryAdminFeign;
 
 @RestController
 @RequestMapping("/admin/categories")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminCategoryController implements AdminCategoryFeign {
+public class CategoryAdminController implements CategoryAdminFeign {
 
     private final CategoryService categoryService;
 

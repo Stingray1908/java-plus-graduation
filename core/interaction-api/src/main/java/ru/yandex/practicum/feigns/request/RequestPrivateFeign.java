@@ -10,7 +10,7 @@ import ru.yandex.practicum.dto.request.ParticipationRequestDto;
 import java.util.List;
 
 @FeignClient(name = "request-service", path = "/users/{userId}/events/{eventId}/requests")
-public interface PrivateRequestFeign {
+public interface RequestPrivateFeign {
 
     @PatchMapping
     @ResponseStatus(HttpStatus.OK)

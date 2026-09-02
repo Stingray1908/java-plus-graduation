@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @FeignClient(name = "main-service", path = "/categories")
-public interface PublicCategoryFeign {
+public interface CategoryPublicFeign {
 
 
     @GetMapping

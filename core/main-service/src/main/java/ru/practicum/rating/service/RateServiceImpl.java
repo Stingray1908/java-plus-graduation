@@ -14,6 +14,8 @@ import ru.practicum.rating.repo.RateRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -69,5 +71,9 @@ public class RateServiceImpl implements RateService {
                 .orElseThrow(() -> new NotFoundException("Оценка пользователя ID=" + userId + " для события ID=" + eventId + " не найдена"));
 
         rateRepository.delete(rate);
+    }
+
+    public List<Object[]> getRatingsForEvents(List<Long> eventIds){
+        return rateRepository.getRatingsForEvents(eventIds);
     }
 }

@@ -20,22 +20,22 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(name = "pinned", nullable = false)
+    @Column(nullable = false)
     private Boolean pinned;
 
-    @Column(name = "description", length = 1000)
+    @Column(length = 1000)
     private String description;
 
-    @ManyToMany
-    @JoinTable(
+    @ElementCollection
+    @CollectionTable(
             name = "compilation_events",
-            joinColumns = @JoinColumn(name = "compilation_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
+            joinColumns = @JoinColumn(name = "compilation_id")
     )
-    private List<Event> events = new ArrayList<>();
+    @Column(name = "event_id")
+    private List<Long> eventIds = new ArrayList<>();
 
     public Compilation(String title, Boolean pinned, String description) {
         this.title = title;

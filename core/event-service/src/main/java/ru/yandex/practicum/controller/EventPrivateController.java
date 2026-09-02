@@ -94,6 +94,4 @@ public class EventPrivateController implements EventPrivateFeign {
 
         return event;
     }
-
-
 }

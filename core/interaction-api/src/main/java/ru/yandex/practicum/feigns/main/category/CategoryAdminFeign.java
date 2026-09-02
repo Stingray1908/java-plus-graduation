@@ -11,7 +11,7 @@ import ru.yandex.practicum.dto.categories.CategoryDto;
 
 @FeignClient(name = "main-service", path = "/admin/categories")
 @Validated
-public interface AdminCategoryFeign {
+public interface CategoryAdminFeign {
 
     @PostMapping
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto dto);

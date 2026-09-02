@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateRequest;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateResult;
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
-import ru.yandex.practicum.feigns.request.PrivateRequestFeign;
+import ru.yandex.practicum.feigns.request.RequestPrivateFeign;
 import ru.yandex.practicum.service.RequestsService;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events/{eventId}/requests")
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateRequestController implements PrivateRequestFeign {
+public class RequestPrivateController implements RequestPrivateFeign {
 
     private final RequestsService requestsService;
 

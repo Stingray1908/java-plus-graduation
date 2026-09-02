@@ -4,10 +4,12 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @FeignClient(name = "main-service", path = "/users/{userId}/events/{eventId}/rate")
 
-public interface PrivateRateFeign {
+public interface RatePrivateFeign {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -21,4 +23,7 @@ public interface PrivateRateFeign {
     public void deleteRate(
             @PathVariable Long userId,
             @PathVariable Long eventId);
+
+    @GetMapping
+     List<Object[]> getRatingsForEvents(@RequestParam List<Long> eventIds);
 }

@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.categories.service.CategoryService;
 import ru.yandex.practicum.dto.categories.CategoryDto;
-import ru.yandex.practicum.feigns.main.category.PublicCategoryFeign;
+import ru.yandex.practicum.feigns.main.category.CategoryPublicFeign;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
-public class PublicCategoryController implements PublicCategoryFeign {
+public class CategoryPublicController implements CategoryPublicFeign {
 
     private final CategoryService categoryService;
 

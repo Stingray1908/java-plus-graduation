@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
 import ru.yandex.practicum.feigns.event.EventsAdminFeign;
 import ru.yandex.practicum.service.EventAdditionalService;
@@ -65,5 +66,15 @@ public class EventsAdminController implements EventsAdminFeign {
         log.info("Получен список событий для модерации. Количество элементов: {}", events.size());
 
         return events;
+    }
+
+    @Override
+    public List<EventFullDto> getEventsByIds(List<Long> ids) {
+        return eventAdditionalService.getEventsByIds(ids);
+    }
+
+    @Override
+    public List<EventShortDto> getEventShortDtoByIdsWithStats(List<Long> ids) {
+        return eventAdditionalService.getEventShortDtoByIdsWithStats(ids);
     }
 }
