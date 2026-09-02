@@ -286,3 +286,13 @@ spring:
           uri: lb://main-service
           predicates:
             - Path=/users/{userId}/events/{eventId}/rate/**
+
+        - id: MAIN-RATE-ADDITIONAL
+          uri: lb://main-service
+          predicates:
+            - Path=/users/events/rate/**
+
+        - id: REQUEST-ADDITIONAL
+          uri: lb://main-service
+          predicates:
+            - Path=/users/requests/**

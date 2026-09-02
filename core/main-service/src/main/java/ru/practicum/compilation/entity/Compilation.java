@@ -2,7 +2,6 @@ package ru.practicum.compilation.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.events.entity.Event;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,8 +3,11 @@ package ru.practicum.subscriptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.practicum.events.entity.Event;
@@ -15,6 +18,9 @@ import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.practicum.requests.repo.RequestRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,9 +33,9 @@ import java.util.stream.Collectors;
 @Transactional
 public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
-    private final UserRepository userRepository;
-    private final EventsRepository eventsRepository;
-    private final RequestRepository requestRepository;
+    private final UserAdminFeign userAdminFeign;
+    private final EventsAdminFeign eventsAdminFeign;
+    private final RequestAdditionalFeign requestAdditionalFeign;
 
     @Override
     public void subscribe(Long userId, Long publisherId) {
@@ -39,14 +45,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new ConflictException("User cannot subscribe to himself");
         }
 
-        User subscriber = findUserById(userId);
-        User publisher = findUserById(publisherId);
+        UserDto subscriber = getUserById(userId);
+        UserDto publisher = getUserById(publisherId);
 
         if (subscriptionRepository.existsBySubscriber_IdAndPublisher_Id(userId, publisherId)) {
             throw new ConflictException("User with id=" + userId + " is already subscribed to user with id=" + publisherId);
         }
 
-        subscriptionRepository.save(new Subscription(null, subscriber, publisher, LocalDateTime.now()));
+        subscriptionRepository.save(new Subscription(null, userId, publisherId, LocalDateTime.now()));
         log.info("Пользователь с ID {} успешно подписался на пользователя с ID {}", userId, publisherId);
     }
 
@@ -106,5 +112,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                         row -> ((Number) row[0]).longValue(),
                         row -> ((Number) row[1]).longValue()
                 ));
+    }
+
+    private UserDto getUserById(Long id) {
+        UserDto user = userAdminFeign.getById(id);
+        if (user == null) throw new NotFoundException("Пользователь с ID " + id + " не найден");
+        return user;
+    }
+
+    private EventFullDto getEventById(Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+        if (event.getStatusCode().is2xxSuccessful()) {
+            throw new NotFoundException("Событие с ID " + id + " не найдено");
+        }
+        return event.getBody();
     }
 }

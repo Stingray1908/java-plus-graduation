@@ -23,7 +23,4 @@ public interface RatePrivateFeign {
     public void deleteRate(
             @PathVariable Long userId,
             @PathVariable Long eventId);
-
-    @GetMapping
-     List<Object[]> getRatingsForEvents(@RequestParam List<Long> eventIds);
 }
