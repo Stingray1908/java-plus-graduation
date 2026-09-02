@@ -11,7 +11,6 @@ import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.main.rate.PrivateRateFeign;
 import ru.yandex.practicum.feigns.main.rate.RatePrivateFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.mapper.EventsMapper;
@@ -31,7 +30,6 @@ import static ru.yandex.practicum.mapper.EventsMapper.toShortEventDto;
 @RequiredArgsConstructor
 @Service
 public class EventAdditionalService {
-
 
     private final StatsClientDiscovery statsClient;
     private final RequestAdditionalFeign requestAdditionalFeign;
@@ -66,21 +64,6 @@ public class EventAdditionalService {
                         ratings.get(event.getId()),
                         views.get(event.getId())))
                 .toList();
-    }
-
-    private List<EventShortDto> mapToEventShortDto(Compilation compilation, Map<Long, Long> confirmedRequests,
-                                                   Map<Long, Long> views, Map<Long, Long> ratings) {
-
-        List<EventShortDto> shortEvents = compilation.getEventIds().stream()
-                .map(event -> {
-                    EventShortDto shortDto = EventsMapper.toShortEventDto(
-                            event,
-                            confirmedRequestsMap.getOrDefault(event.getId(), 0L),
-                            ratingsMap.getOrDefault(event.getId(), 0L)
-                    );
-                    shortDto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
-                    return shortDto;
-                })
     }
 
     private Map<Long, Long> getConfirmedRequestsMap(List<Long> events) {
