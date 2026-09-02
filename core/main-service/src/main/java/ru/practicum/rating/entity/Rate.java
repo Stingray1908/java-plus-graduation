@@ -19,7 +19,7 @@ public class Rate {
     @Column(nullable = false)
     private Long event;
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long user;
 
     @Column(name = "is_like", nullable = false)

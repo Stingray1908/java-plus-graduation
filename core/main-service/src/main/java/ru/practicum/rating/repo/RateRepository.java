@@ -12,18 +12,20 @@ import java.util.Optional;
 @Repository
 public interface RateRepository extends JpaRepository<Rate, Long> {
 
-    Optional<Rate> findByEventIdAndUserId(Long eventId, Long userId);
+    @Query("SELECT r FROM Rate r WHERE r.event = :eventId AND r.user = :userId")
+    Optional<Rate> findByEventIdAndUserId(@Param("eventId") Long eventId, @Param("userId") Long userId);
 
-    @Query("SELECT r.event.id, " +
+
+    @Query("SELECT r.event, " +
             "SUM(CASE WHEN r.isLike = true THEN 1 ELSE -1 END) " +
             "FROM Rate r " +
-            "WHERE r.event.id IN :eventIds " +
-            "GROUP BY r.event.id")
+            "WHERE r.event IN :eventIds " +
+            "GROUP BY r.event")
     List<Object[]> getRatingsForEvents(@Param("eventIds") List<Long> eventIds);
 
     // Подсчет рейтинга для одного события (чтобы не гонять массивы ради 1 ивента)
     @Query("SELECT COALESCE(SUM(CASE WHEN r.isLike = true THEN 1 ELSE -1 END), 0) " +
             "FROM Rate r " +
-            "WHERE r.event.id = :eventId")
+            "WHERE r.event = :eventId")
     Long getRatingForEvent(@Param("eventId") Long eventId);
 }
