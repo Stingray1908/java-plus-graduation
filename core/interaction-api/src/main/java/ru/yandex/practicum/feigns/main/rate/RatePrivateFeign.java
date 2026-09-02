@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-@FeignClient(name = "main-service", path = "/users/{userId}/events/{eventId}/rate")
+@FeignClient(name = "main-service", contextId = "ratePrivateFeign", path = "/users/{userId}/events/{eventId}/rate")
 
 public interface RatePrivateFeign {
 

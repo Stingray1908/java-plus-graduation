@@ -14,7 +14,7 @@ import ru.yandex.practicum.dto.events.EventShortDto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@FeignClient(name = "event-service", path = "/events")
+@FeignClient(name = "event-service", contextId = "eventsPublicFeign", path = "/events")
 public interface EventsPublicFeign {
 
     @GetMapping

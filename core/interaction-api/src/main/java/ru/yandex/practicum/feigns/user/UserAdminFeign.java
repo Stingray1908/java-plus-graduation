@@ -11,7 +11,7 @@ import ru.yandex.practicum.dto.user.UserDto;
 
 import java.util.List;
 
-@FeignClient(name = "user-service", path = "/admin/users")
+@FeignClient(name = "user-service", contextId = "userAdminFeign", path = "/admin/users")
 public interface UserAdminFeign {
 
     @ResponseStatus(HttpStatus.CREATED)

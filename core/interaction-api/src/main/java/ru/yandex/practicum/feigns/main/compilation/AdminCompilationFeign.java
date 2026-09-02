@@ -11,7 +11,7 @@ import ru.yandex.practicum.dto.compilation.NewCompilationDto;
 import ru.yandex.practicum.dto.compilation.UpdateCompilationRequest;
 
 
-@FeignClient(name = "main-service", path = "/admin/compilations")
+@FeignClient(name = "main-service", contextId = "adminCompilationFeign", path = "/admin/compilations")
 @Validated
 public interface AdminCompilationFeign {
 

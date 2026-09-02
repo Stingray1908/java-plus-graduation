@@ -9,7 +9,7 @@ import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
 
 import java.util.List;
 
-@FeignClient(name = "comment-service", path = "/admin/comments")
+@FeignClient(name = "comment-service", contextId = "adminCommentFeign", path = "/admin/comments")
 public interface AdminCommentFeign {
 
     @GetMapping

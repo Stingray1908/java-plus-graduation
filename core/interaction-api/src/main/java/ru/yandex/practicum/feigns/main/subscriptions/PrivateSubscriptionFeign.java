@@ -13,7 +13,7 @@ import ru.yandex.practicum.enums.EventState;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@FeignClient(name = "main-service", path = "/users/{userId}/subscriptions")
+@FeignClient(name = "main-service", contextId = "privateSubscriptionFeign", path = "/users/{userId}/subscriptions")
 @Validated
 public interface PrivateSubscriptionFeign {
 

@@ -20,12 +20,10 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscriber_id", nullable = false)
+    @Column(nullable = false)
     private Long subscriber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "publisher_id", nullable = false)
+    @Column(nullable = false)
     private Long publisher;
 
     @Column(name = "created_on", nullable = false)

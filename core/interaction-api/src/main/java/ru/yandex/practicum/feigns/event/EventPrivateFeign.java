@@ -14,7 +14,7 @@ import ru.yandex.practicum.enums.EventState;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@FeignClient(name = "event-service", path = "/users/{userId}/events")
+@FeignClient(name = "event-service", contextId = "eventPrivateFeign", path = "/users/{userId}/events")
 public interface EventPrivateFeign {
 
     @PostMapping

@@ -7,7 +7,7 @@ import ru.yandex.practicum.enums.EventState;
 
 import java.util.List;
 
-@FeignClient(name = "request-service", path = "users/requests")
+@FeignClient(name = "request-service", contextId = "requestAdditionalFeign", path = "users/requests")
 public interface RequestAdditionalFeign {
 
     @GetMapping

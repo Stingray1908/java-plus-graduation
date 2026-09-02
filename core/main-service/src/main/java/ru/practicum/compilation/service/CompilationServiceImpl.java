@@ -32,19 +32,17 @@ import java.util.stream.Collectors;
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
-    private final RequestPrivateFeign requestPrivateFeign;
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final EventsAdminFeign eventsAdminFeign;
     private final RateRepository rateRepository;
     private final StatsClient statsClient;
 
     public CompilationServiceImpl(CompilationRepository compilationRepository,
-                                  RequestPrivateFeign requestPrivateFeign,
-                                  RequestAdditionalFeign requestAdditionalFeign, EventsAdminFeign eventsAdminFeign,
+                                  RequestAdditionalFeign requestAdditionalFeign,
+                                  EventsAdminFeign eventsAdminFeign,
                                   RateRepository rateRepository,
                                   @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
         this.compilationRepository = compilationRepository;
-        this.requestPrivateFeign = requestPrivateFeign;
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.eventsAdminFeign = eventsAdminFeign;
         this.rateRepository = rateRepository;

@@ -10,7 +10,7 @@ import ru.yandex.practicum.dto.categories.CategoryDto;
 import java.util.List;
 
 
-@FeignClient(name = "main-service", path = "/categories")
+@FeignClient(name = "main-service", contextId = "categoryPublicFeign", path = "/categories")
 public interface CategoryPublicFeign {
 
 

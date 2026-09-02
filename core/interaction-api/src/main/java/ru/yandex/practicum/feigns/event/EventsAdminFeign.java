@@ -13,7 +13,7 @@ import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@FeignClient(name = "event-service", path = "/admin/events")
+@FeignClient(name = "event-service", contextId = "eventsAdminFeign", path = "/admin/events")
 public interface EventsAdminFeign {
 
     @GetMapping("{/eventId}")

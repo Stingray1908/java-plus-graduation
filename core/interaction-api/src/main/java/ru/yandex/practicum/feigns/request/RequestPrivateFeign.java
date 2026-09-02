@@ -9,7 +9,7 @@ import ru.yandex.practicum.dto.request.ParticipationRequestDto;
 
 import java.util.List;
 
-@FeignClient(name = "request-service", path = "/users/{userId}/events/{eventId}/requests")
+@FeignClient(name = "request-service", contextId = "requestPrivateFeign", path = "/users/{userId}/events/{eventId}/requests")
 public interface RequestPrivateFeign {
 
     @PatchMapping

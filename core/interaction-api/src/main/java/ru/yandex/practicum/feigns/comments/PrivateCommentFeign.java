@@ -11,7 +11,7 @@ import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByAuthorRequest;
 
 import java.util.List;
-@FeignClient(name = "comment-service", path = "/users/{userId}/events/{eventId}/comments")
+@FeignClient(name = "comment-service", contextId = "privateCommentFeign", path = "/users/{userId}/events/{eventId}/comments")
 public interface PrivateCommentFeign {
 
     @PostMapping

@@ -11,7 +11,7 @@ import ru.yandex.practicum.dto.compilation.CompilationDto;
 
 import java.util.List;
 
-@FeignClient(name = "main-service", path = "/compilations")
+@FeignClient(name = "main-service", contextId = "publicCompilationFeign", path = "/compilations")
 @Validated
 public interface PublicCompilationFeign {
 

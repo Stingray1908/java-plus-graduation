@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 
-@FeignClient(name = "main-service", path = "/admin/categories")
+@FeignClient(name = "main-service", contextId = "categoryAdminFeign", path = "/admin/categories")
 @Validated
 public interface CategoryAdminFeign {
 
