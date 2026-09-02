@@ -11,6 +11,7 @@ import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
 import ru.yandex.practicum.feigns.main.rate.RatePrivateFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.mapper.EventsMapper;
@@ -36,6 +37,7 @@ public class EventAdditionalService {
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final EventsRepository eventsRepository;
     private final RatePrivateFeign ratePrivateFeign;
+    private final RateAdditionalFeign rateAdditionalFeign;
 
     public EventFullDto findEventById(Long id) {
         Event event = eventsRepository.findById(id)
@@ -125,7 +127,7 @@ public class EventAdditionalService {
     private Map<Long, Long> getRatingsMap(List<Long> eventIds) {
         if (eventIds.isEmpty()) return Map.of();
 
-        List<Object[]> results = ratePrivateFeign.getRatingsForEvents(eventIds);
+        List<Object[]> results = rateAdditionalFeign.getRatingsForEvents(eventIds);
         return results.stream().collect(Collectors.toMap(
                 row -> ((Number) row[0]).longValue(),
                 row -> ((Number) row[1]).longValue()

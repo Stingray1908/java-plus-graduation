@@ -28,6 +28,8 @@ import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.feigns.event.EventsAdminFeign;
 import ru.yandex.practicum.feigns.main.category.CategoryPublicFeign;
+import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
+import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.mapper.EventsMapper;
 import ru.yandex.practicum.moderation.ModerationComment;
@@ -56,17 +58,18 @@ public class EventsServiceImpl implements EventsService {
     private final EventAdditionalService eventAdditionalService;
     private final StatsClient statsClient;
     private final EntityManager entityManager;
-
+    private final RequestAdditionalFeign requestAdditionalFeign;
     private final ModerationCommentRepository moderationCommentRepository;
+    private final RateAdditionalFeign rateAdditionalFeign;
 
     public EventsServiceImpl(UserAdminFeign userAdminFeign,
                              EventsAdminFeign eventsAdminFeign, CategoryPublicFeign categoryPublicFeign,
                              EventsRepository eventRepository, EventAdditionalService eventAdditionalService,
 
                              @Qualifier("StatsClientDiscovery") StatsClient statsClient,
-                             EntityManager entityManager,
+                             EntityManager entityManager, RequestAdditionalFeign requestAdditionalFeign,
 
-                             ModerationCommentRepository moderationCommentRepository) {
+                             ModerationCommentRepository moderationCommentRepository, RateAdditionalFeign rateAdditionalFeign) {
         this.userAdminFeign = userAdminFeign;
         this.eventsAdminFeign = eventsAdminFeign;
         this.categoryPublicFeign = categoryPublicFeign;
@@ -75,8 +78,10 @@ public class EventsServiceImpl implements EventsService {
 
         this.statsClient = statsClient;
         this.entityManager = entityManager;
+        this.requestAdditionalFeign = requestAdditionalFeign;
 
         this.moderationCommentRepository = moderationCommentRepository;
+        this.rateAdditionalFeign = rateAdditionalFeign;
     }
 
     @Override
@@ -139,11 +144,17 @@ public class EventsServiceImpl implements EventsService {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
-        event.setConfirmedRequests(requestRepository.countByEventIdAndStatus(event.getId(), EventState.CONFIRMED));
-        setViewsToEvents(List.of(event));
-        Long rating = rateRepository.getRatingForEvent(id);
+        List<Object[]> confirmedRequests = requestAdditionalFeign.countRequestsByEventIdsAndStatus(
+                List.of(event.getId()), EventState.CONFIRMED
+        );
+        Long count = confirmedRequests.isEmpty() ? 0L : (Long) confirmedRequests.getFirst()[1];
 
-        return toEventFullDto(event, rating);
+        event.setConfirmedRequests(count);
+        setViewsToEvents(List.of(event));
+        List<Object[]> rating = rateAdditionalFeign.getRatingsForEvents(List.of(id));
+        Long ratingCount = rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
+
+        return toEventFullDto(event, ratingCount);
     }
 
     @Override
@@ -192,8 +203,9 @@ public class EventsServiceImpl implements EventsService {
                 .setFirstResult((int) pageRequest.getOffset())
                 .setMaxResults(pageRequest.getPageSize())
                 .getResultList();
+        List<Long> ids = events.stream().map(Event::getId).toList();
+        Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(ids);
 
-        Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(events);
         Map<Long, Long> ratings = getRatingsMap(events);
         setViewsToEvents(events);
 
@@ -245,10 +257,10 @@ public class EventsServiceImpl implements EventsService {
         applyNonNullUpdates(event, request);
 
         Event saved = eventRepository.save(event);
-        saved.setConfirmedRequests(requestRepository.countByEventIdAndStatus(saved.getId(), EventState.CONFIRMED));
+        saved.setConfirmedRequests(getConfirmedRequests(List.of(event.getId())));
         setViewsToEvent(saved);
 
-        Long rating = rateRepository.getRatingForEvent(saved.getId());
+        Long rating = getRatingForEvents(List.of(saved.getId()));
         return EventsMapper.toEventFullDto(saved, moderationComment, rating);
     }
 
@@ -263,8 +275,8 @@ public class EventsServiceImpl implements EventsService {
                 .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
 
         // 2. Проверяем принадлежность события пользователю
-        User user = event.getInitiator();
-        if (!user.getId().equals(userId)) {
+
+        if (!event.getInitiatorId().equals(userId)) {
             throw new ForbiddenActionException("Пользователь с ID " + userId + " не является инициатором события " + eventId);
         }
 
@@ -310,7 +322,7 @@ public class EventsServiceImpl implements EventsService {
         Event updatedEvent = eventRepository.save(event);
         log.info("Событие с ID: {} успешно обновлено", eventId);
 
-        Long rating = rateRepository.getRatingForEvent(updatedEvent.getId());
+        Long rating = getRatingForEvents(List.of(updatedEvent.getId()));
         return toEventFullDto(updatedEvent, rating);
     }
 
@@ -319,15 +331,16 @@ public class EventsServiceImpl implements EventsService {
         log.debug("Начинаем поиск событий для пользователя с ID: {}, from: {}, size: {}", userId, from, size);
 
 
-        User user = findUserById(userId);
-        List<Event> events = eventRepository.findAllByInitiatorIdWithOffset(user.getId(), from, size);
+        getUserById(userId);
+        List<Event> events = eventRepository.findAllByInitiatorIdWithOffset(userId, from, size);
 
         if (events.isEmpty()) {
             log.debug("Для пользователя с ID {} не найдено событий", userId);
             return Collections.emptyList();
         }
 
-        Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(events);
+        List<Long> ids = events.stream().map(Event::getId).toList();
+        Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(ids);
         Map<Long, Long> ratings = getRatingsMap(events);
 
         List<EventFullDto> eventFullDtos = events.stream()
@@ -344,13 +357,13 @@ public class EventsServiceImpl implements EventsService {
         log.debug("Начинаем поиск события с ID: {} для пользователя с ID: {}", eventId, userId);
 
         // Находим пользователя — если не найден, будет выброшено исключение NotFoundException
-        User user = findUserById(userId);
+        getUserById(userId);
 
         // Ищем событие по ID и проверяем принадлежность пользователю
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
-        if (!event.getInitiator().getId().equals(userId)) {
+        if (!event.getInitiatorId().equals(userId)) {
             throw new ForbiddenActionException(
                     "Пользователь с ID " + userId + " не является инициатором события " + eventId
             );
@@ -359,12 +372,14 @@ public class EventsServiceImpl implements EventsService {
         log.debug("Событие найдено в БД: ID {}, заголовок '{}'", event.getId(), event.getTitle());
 
         // Получаем количество подтверждённых заявок
-        long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), EventState.CONFIRMED);
+        List<Long> events = new ArrayList<>();
+        events.add(event.getId());
+        Long confirmedRequests = getConfirmedRequests(events);
         event.setConfirmedRequests(confirmedRequests);
 
         // Обновляем просмотры
         setViewsToEvent(event);
-        Long rating = rateRepository.getRatingForEvent(eventId);
+        Long rating = getRatingForEvents(List.of(eventId));
 
         log.info("Полные данные события подготовлены для возврата");
         return toEventFullDto(event, rating);
@@ -401,10 +416,10 @@ public class EventsServiceImpl implements EventsService {
         }
     }
 
-    private Map<Long, Long> getConfirmedRequestsMap(List<Long> events) {
-        if (events.isEmpty()) return Map.of();
+    private Map<Long, Long> getConfirmedRequestsMap(List<Long> eventIds) {
+        if (eventIds.isEmpty()) return Map.of();
 
-        return request.countRequestsByEventIdsAndStatus(eventIds, EventState.CONFIRMED).stream()
+        return requestAdditionalFeign.countRequestsByEventIdsAndStatus(eventIds, EventState.CONFIRMED).stream()
                 .collect(Collectors.toMap(
                         r -> ((Number) r[0]).longValue(),
                         r -> ((Number) r[1]).longValue()
@@ -419,18 +434,18 @@ public class EventsServiceImpl implements EventsService {
         events.forEach(e -> e.setViews(viewsMap.getOrDefault("/events/" + e.getId(), 0L)));
     }
 
-    private Map<Long, Long> getRequestCounts(List<Long> eventIds) {
+   /* private Map<Long, Long> getRequestCounts(List<Long> eventIds) {
         return requestRepository.countConfirmedRequestsByEventIds(eventIds, EventState.CONFIRMED).stream()
                 .collect(Collectors.toMap(
                         r -> ((Number) r[0]).longValue(),
                         r -> ((Number) r[1]).longValue()
                 ));
-    }
+    }*/
 
     private Map<Long, Long> getRatingsMap(List<Event> events) {
         if (events.isEmpty()) return Map.of();
         List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
-        List<Object[]> results = rateRepository.getRatingsForEvents(eventIds);
+        List<Object[]> results = rateAdditionalFeign.getRatingsForEvents(eventIds);
         return results.stream().collect(Collectors.toMap(
                 row -> ((Number) row[0]).longValue(),
                 row -> ((Number) row[1]).longValue()
@@ -449,9 +464,11 @@ public class EventsServiceImpl implements EventsService {
             event.setLocationLon(request.getLocation().getLon());
         }
         if (request.getCategory() != null) {
-            Category category = categoryRepository.findById(request.getCategory())
-                    .orElseThrow(() -> new NotFoundException("Category with id=" + request.getCategory() + " was not found"));
-            event.setCategory(category);
+            ResponseEntity<CategoryDto> category = categoryPublicFeign.getCategoryById(request.getCategory());
+                    if (category.getStatusCode().is2xxSuccessful()) {
+                        throw new NotFoundException("Category with id=" + request.getCategory() + " was not found");
+                    }
+            event.setCategoryId(category.getBody().getId());
         }
         if (request.getEventDate() != null) event.setEventDate(request.getEventDate());
     }
@@ -542,5 +559,21 @@ public class EventsServiceImpl implements EventsService {
         return events.stream()
                 .map(EventsMapper::toEventFullDto)
                 .collect(Collectors.toList());
+    }
+
+    public Long getConfirmedRequests(List<Long> ids) {
+
+        List<Object[]> confirmedRequests = requestAdditionalFeign.countRequestsByEventIdsAndStatus(
+                ids, EventState.CONFIRMED);
+        Long count = confirmedRequests.isEmpty() ? 0L : (Long) confirmedRequests.getFirst()[1];
+        return count;
+    }
+
+    public Long getRatingForEvents(List<Long> ids) {
+
+        List<Object[]> rating = rateAdditionalFeign.getRatingsForEvents(ids);
+        Long ratingCount = rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
+
+        return ratingCount;
     }
 }
