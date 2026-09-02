@@ -2,17 +2,18 @@ package ru.practicum.rating.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.error.exception.ConflictException;
-import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.practicum.events.entity.Event;
-import ru.yandex.practicum.enums.EventState;
-import ru.practicum.events.repo.EventsRepository;
 import ru.practicum.rating.entity.Rate;
 import ru.practicum.rating.repo.RateRepository;
-import ru.practicum.user.User;
-import ru.practicum.user.UserRepository;
+import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.error.exception.ConflictException;
+import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
 
 import java.util.List;
 
@@ -23,18 +24,15 @@ import java.util.List;
 public class RateServiceImpl implements RateService {
 
     private final RateRepository rateRepository;
-    private final EventsRepository eventsRepository;
-    private final UserRepository userRepository;
+    private final EventsAdminFeign eventsAdminFeign;
+    private final UserAdminFeign userAdminFeign;
 
     @Override
     public void addRate(Long userId, Long eventId, Boolean isLike) {
         log.info("Пользователь ID={} ставит {} событию ID={}", userId, isLike ? "ЛАЙК" : "ДИЗЛАЙК", eventId);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
-
-        Event event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
+        UserDto user = getUserById(userId);
+        EventFullDto event = getEventById(eventId);
 
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new ConflictException("Нельзя оценивать неопубликованные события");
@@ -47,8 +45,8 @@ public class RateServiceImpl implements RateService {
         // Ищем существующую оценку. Если есть — обновляем, если нет — создаем.
         Rate rate = rateRepository.findByEventIdAndUserId(eventId, userId)
                 .orElse(Rate.builder()
-                        .user(user)
-                        .event(event)
+                        .user(userId)
+                        .event(eventId)
                         .build());
 
         rate.setIsLike(isLike);
@@ -60,12 +58,8 @@ public class RateServiceImpl implements RateService {
         log.info("Пользователь ID={} удаляет оценку у события ID={}", userId, eventId);
 
         // Проверяем, существует ли пользователь и событие
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
-        }
-        if (!eventsRepository.existsById(eventId)) {
-            throw new NotFoundException("Событие с ID " + eventId + " не найдено");
-        }
+        getUserById(userId);
+        getEventById(eventId);
 
         Rate rate = rateRepository.findByEventIdAndUserId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Оценка пользователя ID=" + userId + " для события ID=" + eventId + " не найдена"));
@@ -73,7 +67,21 @@ public class RateServiceImpl implements RateService {
         rateRepository.delete(rate);
     }
 
-    public List<Object[]> getRatingsForEvents(List<Long> eventIds){
+    public List<Object[]> getRatingsForEvents(List<Long> eventIds) {
         return rateRepository.getRatingsForEvents(eventIds);
+    }
+
+    private UserDto getUserById(Long id) {
+        UserDto user = userAdminFeign.getById(id);
+        if (user == null) throw new NotFoundException("Пользователь с ID " + id + " не найден");
+        return user;
+    }
+
+    private EventFullDto getEventById(Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+        if (event.getStatusCode().is2xxSuccessful()) {
+            throw new NotFoundException("Событие с ID " + id + " не найдено");
+        }
+        return event.getBody();
     }
 }
