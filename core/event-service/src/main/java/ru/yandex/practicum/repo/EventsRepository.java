@@ -17,9 +17,9 @@ public interface EventsRepository extends JpaRepository<Event, Long>, JpaSpecifi
     Optional<Event> findByIdAndState(Long id, EventState state);
 
     @Query("SELECT e FROM Event e WHERE " +
-            "(:users IS NULL OR e.initiator.id IN :users) AND " +
+            "(:users IS NULL OR e.initiatorId IN :users) AND " +
             "(:states IS NULL OR e.state IN :states) AND " +
-            "(:categories IS NULL OR e.category.id IN :categories) AND " +
+            "(:categories IS NULL OR e.categoryId IN :categories) AND " +
             "(:rangeStart IS NULL OR e.eventDate >= :rangeStart) AND " +
             "(:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
     List<Event> findByFilters(
@@ -35,7 +35,7 @@ public interface EventsRepository extends JpaRepository<Event, Long>, JpaSpecifi
             "(:text IS NULL OR " +
             "LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR " +
             "LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%'))) AND " +
-            "(:categories IS NULL OR e.category.id IN :categories) AND " +
+            "(:categories IS NULL OR e.categoryId IN :categories) AND " +
             "(:paid IS NULL OR e.paid = :paid) AND " +
             "(e.eventDate >= :rangeStart) AND " +
             "(:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
@@ -59,12 +59,10 @@ public interface EventsRepository extends JpaRepository<Event, Long>, JpaSpecifi
     @Query("SELECT e FROM Event e " +
             "WHERE e.state = :state " +
             "AND e.eventDate > :now " +
-            "AND e.initiator.id IN (" +
-            "    SELECT s.publisher.id FROM Subscription s WHERE s.subscriber.id = :subscriberId" +
-            ") " +
+            "AND e.initiatorId IN :publisherIds " +
             "ORDER BY e.eventDate DESC")
-    List<Event> findEventsBySubscriberIdAndStatusAndTimeAfter(
-            @Param("subscriberId") Long subscriberId,
+    List<Event> findEventsByPublisherIdsAndStatusAndTimeAfter(
+            @Param("publisherIds") List<Long> publisherIds,
             @Param("state") EventState state,
             @Param("now") LocalDateTime now,
             Pageable pageable);
@@ -80,7 +78,7 @@ public interface EventsRepository extends JpaRepository<Event, Long>, JpaSpecifi
 
     @Query("SELECT e " +
             "FROM Event e " +
-            "WHERE e.initiator.id = :userId " +
+            "WHERE e.initiatorId = :userId " +
             "AND (e.state = 'CANCELED' OR e.state = 'REJECTED') " +
             "AND e.requestModeration = false " +
             "ORDER BY e.eventDate DESC")

@@ -1,0 +1,41 @@
+package ru.yandex.practicum.compilation.controller;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.compilation.service.CompilationService;
+import ru.yandex.practicum.dto.compilation.CompilationDto;
+import ru.yandex.practicum.feigns.main.compilation.PublicCompilationFeign;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/compilations")
+@RequiredArgsConstructor
+@Slf4j
+@Validated
+public class PublicCompilationController implements PublicCompilationFeign {
+
+    private final CompilationService compilationService;
+
+    @Override
+    public List<CompilationDto> getCompilations(
+            @RequestParam(required = false) Boolean pinned,
+            @Min(0) @RequestParam(defaultValue = "0") Integer from,
+            @Positive @RequestParam(defaultValue = "10") Integer size) {
+        log.info("Публичный API: Запрос на получение списка подборок (pinned={}, from={}, size={})", pinned, from, size);
+        return compilationService.getCompilations(pinned, from, size);
+    }
+
+    @Override
+    public CompilationDto getCompilationById(@Positive @PathVariable Long compId) {
+        log.info("Публичный API: Запрос на получение подборки с ID={}", compId);
+        return compilationService.getCompilationById(compId);
+    }
+}

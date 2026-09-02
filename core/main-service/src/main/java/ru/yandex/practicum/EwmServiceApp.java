@@ -6,12 +6,16 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-@EnableFeignClients
+@EnableFeignClients(basePackages = "ru.yandex.practicum.feigns")
 @SpringBootApplication
-public class EventServiceApp {
+public class EwmServiceApp {
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     public static void main(String[] args) {
-        SpringApplication.run(EventServiceApp.class, args);
+        SpringApplication.run(EwmServiceApp.class, args);
     }
 
 }

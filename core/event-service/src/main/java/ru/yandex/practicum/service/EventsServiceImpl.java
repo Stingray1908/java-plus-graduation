@@ -13,8 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ru.practicum.StatsClient;
-import ru.practicum.dto.ViewStats;
+import ru.yandex.practicum.StatsClient;
+import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
 import ru.yandex.practicum.dto.user.UserDto;
@@ -29,6 +29,7 @@ import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.feigns.event.EventsAdminFeign;
 import ru.yandex.practicum.feigns.main.category.CategoryPublicFeign;
 import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
+import ru.yandex.practicum.feigns.main.subscriptions.PrivateSubscriptionFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.mapper.EventsMapper;
@@ -51,6 +52,7 @@ import static ru.yandex.practicum.mapper.EventsMapper.*;
 @Slf4j
 public class EventsServiceImpl implements EventsService {
     private static final int MIN_HOURS_BEFORE_EVENT = 2;
+    private final PrivateSubscriptionFeign privateSubscriptionFeign;
     private final UserAdminFeign userAdminFeign;
     private final EventsAdminFeign eventsAdminFeign;
     private final CategoryPublicFeign categoryPublicFeign;
@@ -62,7 +64,7 @@ public class EventsServiceImpl implements EventsService {
     private final ModerationCommentRepository moderationCommentRepository;
     private final RateAdditionalFeign rateAdditionalFeign;
 
-    public EventsServiceImpl(UserAdminFeign userAdminFeign,
+    public EventsServiceImpl(PrivateSubscriptionFeign privateSubscriptionFeign, UserAdminFeign userAdminFeign,
                              EventsAdminFeign eventsAdminFeign, CategoryPublicFeign categoryPublicFeign,
                              EventsRepository eventRepository, EventAdditionalService eventAdditionalService,
 
@@ -70,6 +72,7 @@ public class EventsServiceImpl implements EventsService {
                              EntityManager entityManager, RequestAdditionalFeign requestAdditionalFeign,
 
                              ModerationCommentRepository moderationCommentRepository, RateAdditionalFeign rateAdditionalFeign) {
+        this.privateSubscriptionFeign = privateSubscriptionFeign;
         this.userAdminFeign = userAdminFeign;
         this.eventsAdminFeign = eventsAdminFeign;
         this.categoryPublicFeign = categoryPublicFeign;
@@ -544,11 +547,20 @@ public class EventsServiceImpl implements EventsService {
         log.debug("Запрос актуальных опубликованных событий: subscriberId={}, state={}, now={}, from={}, size={}",
                 subscriberId, state, now, from, size);
 
-        var pageable = PageRequest.of(from / size, size); // корректная пагинация через PageRequest
+        var pageable = PageRequest.of(from / size, size);
 
-        // Используем существующий метод репозитория с явной передачей pageable
-        List<Event> events = eventRepository.findEventsBySubscriberIdAndStatusAndTimeAfter(
-                subscriberId,
+        // 1. Получаем список ID авторов (publisher), на которых подписан subscriber
+        List<Long> publishers = privateSubscriptionFeign.findPublishersBySubscriber(subscriberId);
+
+        // Если подписок нет — сразу возвращаем пустой список, не дёргая БД
+        if (publishers == null || publishers.isEmpty()) {
+            log.debug("У подписчика ID={} нет активных подписок, возвращаем пустой список событий", subscriberId);
+            return Collections.emptyList();
+        }
+
+        // 2. Ищем события только от этих авторов
+        List<Event> events = eventRepository.findEventsByPublisherIdsAndStatusAndTimeAfter(
+                publishers,
                 state,
                 now,
                 pageable
@@ -560,6 +572,7 @@ public class EventsServiceImpl implements EventsService {
                 .map(EventsMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
+
 
     public Long getConfirmedRequests(List<Long> ids) {
 

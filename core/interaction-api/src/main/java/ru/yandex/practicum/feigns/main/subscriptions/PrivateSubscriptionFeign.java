@@ -35,4 +35,7 @@ public interface PrivateSubscriptionFeign {
             @PathVariable @Positive Long userId,
             @RequestParam(defaultValue = "0") @Min(0) int from,
             @RequestParam(defaultValue = "10") @Positive int size);
+
+    @GetMapping("/{publisherId}")
+    List<Long> findPublishersBySubscriber(@PathVariable @Positive Long subscriberId);
 }

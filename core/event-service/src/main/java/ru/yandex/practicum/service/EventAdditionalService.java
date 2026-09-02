@@ -1,23 +1,20 @@
 package ru.yandex.practicum.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.practicum.StatsClientDiscovery;
-import ru.practicum.dto.ViewStats;
+import ru.yandex.practicum.StatsClient;
+import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
-import ru.yandex.practicum.feigns.main.rate.RatePrivateFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.mapper.EventsMapper;
 import ru.yandex.practicum.repo.EventsRepository;
 
-import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -29,15 +26,21 @@ import static ru.yandex.practicum.mapper.EventsMapper.toEventFullDto;
 import static ru.yandex.practicum.mapper.EventsMapper.toShortEventDto;
 
 @Slf4j
-@RequiredArgsConstructor
+
 @Service
 public class EventAdditionalService {
 
-    private final StatsClientDiscovery statsClient;
+    private final StatsClient statsClient;
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final EventsRepository eventsRepository;
-    private final RatePrivateFeign ratePrivateFeign;
     private final RateAdditionalFeign rateAdditionalFeign;
+
+    public EventAdditionalService(@Qualifier("StatsClientDiscovery") StatsClient statsClient, RequestAdditionalFeign requestAdditionalFeign, EventsRepository eventsRepository, RateAdditionalFeign rateAdditionalFeign) {
+        this.statsClient = statsClient;
+        this.requestAdditionalFeign = requestAdditionalFeign;
+        this.eventsRepository = eventsRepository;
+        this.rateAdditionalFeign = rateAdditionalFeign;
+    }
 
     public EventFullDto findEventById(Long id) {
         Event event = eventsRepository.findById(id)
@@ -69,7 +72,7 @@ public class EventAdditionalService {
                 .toList();
     }
 
-    public List<EventFullDto> findEventsBySubscriberIdAndStatus(Long ids,
+    /*public List<EventFullDto> findEventsBySubscriberIdAndStatus(Long ids,
                                                                 EventState state,
                                                                 LocalDateTime time,
                                                                 PageRequest request) {
@@ -77,7 +80,7 @@ public class EventAdditionalService {
         return events.stream()
                 .map(EventsMapper::toEventFullDto)
                 .toList();
-    }
+    }*/
 
 
     private Map<Long, Long> getConfirmedRequestsMap(List<Long> events) {
