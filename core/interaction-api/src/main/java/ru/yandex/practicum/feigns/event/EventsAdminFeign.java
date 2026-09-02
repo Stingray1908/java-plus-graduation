@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
+import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
 
 import java.time.LocalDateTime;
@@ -42,12 +43,15 @@ public interface EventsAdminFeign {
             @RequestParam(defaultValue = "10") Integer size
     );
 
-    @GetMapping("all-in")
+    @GetMapping("/all-in")
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getEventsByIds(
-            @RequestParam List<Long> ids);
+            @RequestParam(required = true) List<Long> ids);
     //пишем гет по ид с простым дто, чтобы проверить вообще существует или нет,
     // и не задействовать стат сервис
 
+    @GetMapping("/stats")
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventShortDto> getEventShortDtoByIdsWithStats(@RequestParam(required = true) List<Long> ids);
 
 }

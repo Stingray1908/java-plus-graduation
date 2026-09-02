@@ -60,9 +60,9 @@ public class EventAdditionalService {
 
         return events.stream()
                 .map(event -> toShortEventDto(event,
-                        confirmedRequests.get(event.getId()),
-                        ratings.get(event.getId()),
-                        views.get(event.getId())))
+                        confirmedRequests.getOrDefault(event.getId(), 0L),
+                        ratings.getOrDefault(event.getId(), 0L),
+                        views.getOrDefault(event.getId(), 0L)))
                 .toList();
     }
 

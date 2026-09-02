@@ -10,26 +10,19 @@ import ru.practicum.compilation.entity.Compilation;
 import ru.practicum.compilation.mapper.CompilationMapper;
 import ru.practicum.compilation.repo.CompilationRepository;
 import ru.practicum.dto.ViewStats;
-import ru.yandex.practicum.dto.events.EventFullDto;
-import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.practicum.events.entity.Event;
-import ru.yandex.practicum.enums.EventState;
-import ru.practicum.events.repo.EventsRepository;
 import ru.practicum.rating.repo.RateRepository;
-import ru.practicum.requests.repo.RequestRepository;
 import ru.yandex.practicum.dto.compilation.CompilationDto;
 import ru.yandex.practicum.dto.compilation.NewCompilationDto;
 import ru.yandex.practicum.dto.compilation.UpdateCompilationRequest;
+import ru.yandex.practicum.dto.events.EventShortDto;
+import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.feigns.event.EventsAdminFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.request.RequestPrivateFeign;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,22 +35,18 @@ public class CompilationServiceImpl implements CompilationService {
     private final RequestPrivateFeign requestPrivateFeign;
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final EventsAdminFeign eventsAdminFeign;
-    private final EventsRepository eventsRepository;
-    private final RequestRepository requestRepository;
     private final RateRepository rateRepository;
     private final StatsClient statsClient;
 
-    public CompilationServiceImpl(CompilationRepository compilationRepository, RequestPrivateFeign requestPrivateFeign, RequestAdditionalFeign requestAdditionalFeign, EventsAdminFeign eventsAdminFeign,
-                                  EventsRepository eventsRepository,
-                                  RequestRepository requestRepository,
+    public CompilationServiceImpl(CompilationRepository compilationRepository,
+                                  RequestPrivateFeign requestPrivateFeign,
+                                  RequestAdditionalFeign requestAdditionalFeign, EventsAdminFeign eventsAdminFeign,
                                   RateRepository rateRepository,
                                   @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
         this.compilationRepository = compilationRepository;
         this.requestPrivateFeign = requestPrivateFeign;
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.eventsAdminFeign = eventsAdminFeign;
-        this.eventsRepository = eventsRepository;
-        this.requestRepository = requestRepository;
         this.rateRepository = rateRepository;
         this.statsClient = statsClient;
     }
@@ -102,7 +91,7 @@ public class CompilationServiceImpl implements CompilationService {
     /**
      * Обновляет данные подборки.
      *
-     * @param compId идентификатор подборки
+     * @param compId  идентификатор подборки
      * @param request запрос с данными для обновления
      * @return обновленная подборка с заполненной статистикой
      * @throws NotFoundException если подборка с указанным идентификатором не найдена
@@ -124,10 +113,9 @@ public class CompilationServiceImpl implements CompilationService {
 
         if (request.getEvents() != null) {
             if (request.getEvents().isEmpty()) {
-                compilation.setEvents(new ArrayList<>());
+                compilation.setEventIds(new ArrayList<>());
             } else {
-                List<Event> events = eventsRepository.findAllById(request.getEvents());
-                compilation.setEvents(events);
+                compilation.setEventIds(request.getEvents());
             }
         }
 
@@ -139,8 +127,8 @@ public class CompilationServiceImpl implements CompilationService {
      * Получает список подборок с пагинацией и опциональной фильтрацией по признаку закрепления.
      *
      * @param pinned фильтр по признаку закрепления (null - без фильтрации)
-     * @param from индекс первого элемента для пагинации
-     * @param size количество элементов на странице
+     * @param from   индекс первого элемента для пагинации
+     * @param size   количество элементов на странице
      * @return список подборок с заполненной статистикой
      */
     @Override
@@ -197,18 +185,29 @@ public class CompilationServiceImpl implements CompilationService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(allEvents);
-        Map<Long, Long> views = getViewsMap(allEvents);
-        Map<Long, Long> ratings = getRatingsMap(allEvents);
-        //List<EventShortDto> eventShortDtos = mapToEventShortDto(compilations)
-        // тут нужно создать мапу идподборки, набор ее ид событий
-        //отправляем эту мапу в сервис событий для получения мапы идПодборки/листКороткихДтоСобытий
+        Map<Long, EventShortDto> eventDtoMap;
+
+        if (!allEvents.isEmpty()) {
+            List<EventShortDto> shortDtos = eventsAdminFeign.getEventShortDtoByIdsWithStats(allEvents);
+            eventDtoMap = shortDtos.stream()
+                    .collect(Collectors.toMap(EventShortDto::getId, dto -> dto));
+        } else {
+            eventDtoMap = Map.of();
+        }
+
         return compilations.stream()
-                .map(comp -> CompilationMapper.toCompilationDto(comp, confirmedRequests, views, ratings))
-                .collect(Collectors.toList());
+                .map(compilation -> {
+                    List<EventShortDto> events = compilation.getEventIds().stream()
+                            .map(eventDtoMap::get)
+                            .filter(Objects::nonNull)
+                            .toList();
+
+                    return CompilationMapper.toCompilationDto(compilation, events);
+                })
+                .toList();
     }
 
-    private List<EventShortDto> mapToEventShortDto(Compilation compilation, Map<Long, Long> confirmedRequests,
+    /*private List<EventShortDto> mapToEventShortDto(Compilation compilation, Map<Long, Long> confirmedRequests,
                                                    Map<Long, Long> views, Map<Long, Long> ratings) {
         List<EventShortDto> shortEvents = compilation.getEventIds().stream()
                 .map(event -> {
@@ -220,7 +219,7 @@ public class CompilationServiceImpl implements CompilationService {
                     shortDto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
                     return shortDto;
                 })
-    }
+    }*/
 
     private Map<Long, Long> getRatingsMap(List<Long> eventIds) {
         if (eventIds.isEmpty()) return Map.of();
