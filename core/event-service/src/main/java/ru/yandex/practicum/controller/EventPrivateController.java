@@ -26,8 +26,8 @@ public class EventPrivateController implements EventPrivateFeign {
 
     @Override
     public EventFullDto addEvent(
-            @Valid @RequestBody NewEventDto newEventDto,
-            @PathVariable @Positive Long userId) {
+            @PathVariable @Positive Long userId,
+            @Valid @RequestBody NewEventDto newEventDto) {
 
         log.info("Получен запрос на создание нового события для пользователя с ID: {}. Заголовок события: '{}'", userId, newEventDto.getTitle());
         log.debug("Полные данные события, полученные от клиента: {}", newEventDto);
