@@ -13,9 +13,9 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5436/request_db
-    username: dbuser
-    password: 12345
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: password
 
 logging:
   level:
