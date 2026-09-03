@@ -14,6 +14,8 @@ import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.event.mapper.EventsMapper;
 import ru.yandex.practicum.event.repo.EventsRepository;
+import ru.yandex.practicum.rating.service.RateService;
+import ru.yandex.practicum.rating.service.RateServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -33,13 +35,13 @@ public class EventAdditionalService {
     private final StatsClient statsClient;
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final EventsRepository eventsRepository;
-    private final RateAdditionalFeign rateAdditionalFeign;
+    private final RateServiceImpl rateService;
 
-    public EventAdditionalService(@Qualifier("StatsClientDiscovery") StatsClient statsClient, RequestAdditionalFeign requestAdditionalFeign, EventsRepository eventsRepository, RateAdditionalFeign rateAdditionalFeign) {
+    public EventAdditionalService(@Qualifier("StatsClientDiscovery") StatsClient statsClient, RequestAdditionalFeign requestAdditionalFeign, EventsRepository eventsRepository, RateServiceImpl rateService) {
         this.statsClient = statsClient;
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.eventsRepository = eventsRepository;
-        this.rateAdditionalFeign = rateAdditionalFeign;
+        this.rateService = rateService;
     }
 
     public EventFullDto findEventById(Long id) {
@@ -130,7 +132,7 @@ public class EventAdditionalService {
     private Map<Long, Long> getRatingsMap(List<Long> eventIds) {
         if (eventIds.isEmpty()) return Map.of();
 
-        List<Object[]> results = rateAdditionalFeign.getRatingsForEvents(eventIds);
+        List<Object[]> results = rateService.getRatingsForEvents(eventIds);
         return results.stream().collect(Collectors.toMap(
                 row -> ((Number) row[0]).longValue(),
                 row -> ((Number) row[1]).longValue()

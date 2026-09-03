@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.StatsClient;
+import ru.yandex.practicum.categories.service.CategoryServiceImpl;
 import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
@@ -36,6 +37,9 @@ import ru.yandex.practicum.event.mapper.EventsMapper;
 import ru.yandex.practicum.event.moderation.ModerationComment;
 import ru.yandex.practicum.event.moderation.ModerationCommentRepository;
 import ru.yandex.practicum.event.repo.EventsRepository;
+import ru.yandex.practicum.rating.service.RateService;
+import ru.yandex.practicum.rating.service.RateServiceImpl;
+import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,37 +56,37 @@ import static ru.yandex.practicum.event.mapper.EventsMapper.*;
 @Slf4j
 public class EventsServiceImpl implements EventsService {
     private static final int MIN_HOURS_BEFORE_EVENT = 2;
-    private final PrivateSubscriptionFeign privateSubscriptionFeign;
+    private final SubscriptionServiceImpl subscriptionService;
     private final UserAdminFeign userAdminFeign;
-    private final CategoryPublicFeign categoryPublicFeign;
+    private final CategoryServiceImpl categoryService;
     private final EventsRepository eventRepository;
     private final EventAdditionalService eventAdditionalService;
     private final StatsClient statsClient;
     private final EntityManager entityManager;
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final ModerationCommentRepository moderationCommentRepository;
-    private final RateAdditionalFeign rateAdditionalFeign;
+    private final RateServiceImpl rateService;
 
-    public EventsServiceImpl(PrivateSubscriptionFeign privateSubscriptionFeign, UserAdminFeign userAdminFeign,
-                             EventsAdminFeign eventsAdminFeign, CategoryPublicFeign categoryPublicFeign,
-                             EventsRepository eventRepository, EventAdditionalService eventAdditionalService,
-
+    public EventsServiceImpl(SubscriptionServiceImpl subscriptionService,
+                             UserAdminFeign userAdminFeign,
+                             CategoryServiceImpl categoryService,
+                             EventsRepository eventRepository,
+                             EventAdditionalService eventAdditionalService,
                              @Qualifier("StatsClientDiscovery") StatsClient statsClient,
-                             EntityManager entityManager, RequestAdditionalFeign requestAdditionalFeign,
-
-                             ModerationCommentRepository moderationCommentRepository, RateAdditionalFeign rateAdditionalFeign) {
-        this.privateSubscriptionFeign = privateSubscriptionFeign;
+                             EntityManager entityManager,
+                             RequestAdditionalFeign requestAdditionalFeign,
+                             ModerationCommentRepository moderationCommentRepository,
+                             RateServiceImpl rateService) {
+        this.subscriptionService = subscriptionService;
         this.userAdminFeign = userAdminFeign;
-        this.categoryPublicFeign = categoryPublicFeign;
+        this.categoryService = categoryService;
         this.eventRepository = eventRepository;
         this.eventAdditionalService = eventAdditionalService;
-
         this.statsClient = statsClient;
         this.entityManager = entityManager;
         this.requestAdditionalFeign = requestAdditionalFeign;
-
         this.moderationCommentRepository = moderationCommentRepository;
-        this.rateAdditionalFeign = rateAdditionalFeign;
+        this.rateService = rateService;
     }
 
     @Override
@@ -152,7 +156,7 @@ public class EventsServiceImpl implements EventsService {
 
         event.setConfirmedRequests(count);
         setViewsToEvents(List.of(event));
-        List<Object[]> rating = rateAdditionalFeign.getRatingsForEvents(List.of(id));
+        List<Object[]> rating = rateService.getRatingsForEvents(List.of(id));
         Long ratingCount = rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
 
         return toEventFullDto(event, ratingCount);
@@ -396,12 +400,9 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private CategoryDto getCategoryById(Long categoryId) {
-        ResponseEntity<CategoryDto> category = categoryPublicFeign.getCategoryById(categoryId);
-        if (category.getStatusCode().is2xxSuccessful()) {
-            throw new EventCreationRuleException("categoryId", categoryId,
-                    "Категория с ID " + categoryId + " не найдена в базе данных");
-        }
-        return category.getBody();
+        CategoryDto category = categoryService.getCategoryById(categoryId);
+
+        return category;
     }
 
     private void setViewsToEvent(Event event) {
@@ -446,7 +447,7 @@ public class EventsServiceImpl implements EventsService {
     private Map<Long, Long> getRatingsMap(List<Event> events) {
         if (events.isEmpty()) return Map.of();
         List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
-        List<Object[]> results = rateAdditionalFeign.getRatingsForEvents(eventIds);
+        List<Object[]> results = rateService.getRatingsForEvents(eventIds);
         return results.stream().collect(Collectors.toMap(
                 row -> ((Number) row[0]).longValue(),
                 row -> ((Number) row[1]).longValue()
@@ -465,11 +466,9 @@ public class EventsServiceImpl implements EventsService {
             event.setLocationLon(request.getLocation().getLon());
         }
         if (request.getCategory() != null) {
-            ResponseEntity<CategoryDto> category = categoryPublicFeign.getCategoryById(request.getCategory());
-                    if (category.getStatusCode().is2xxSuccessful()) {
-                        throw new NotFoundException("Category with id=" + request.getCategory() + " was not found");
-                    }
-            event.setCategoryId(category.getBody().getId());
+            CategoryDto category = categoryService.getCategoryById(request.getCategory());
+
+            event.setCategoryId(category.getId());
         }
         if (request.getEventDate() != null) event.setEventDate(request.getEventDate());
     }
@@ -544,7 +543,7 @@ public class EventsServiceImpl implements EventsService {
         var pageable = PageRequest.of(from / size, size);
 
         // 1. Получаем список ID авторов (publisher), на которых подписан subscriber
-        List<Long> publishers = privateSubscriptionFeign.findPublishersBySubscriber(subscriberId);
+        List<Long> publishers = subscriptionService.findPublishersBySubscriber(subscriberId);
 
         // Если подписок нет — сразу возвращаем пустой список, не дёргая БД
         if (publishers == null || publishers.isEmpty()) {
@@ -578,7 +577,7 @@ public class EventsServiceImpl implements EventsService {
 
     public Long getRatingForEvents(List<Long> ids) {
 
-        List<Object[]> rating = rateAdditionalFeign.getRatingsForEvents(ids);
+        List<Object[]> rating = rateService.getRatingsForEvents(ids);
         Long ratingCount = rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
 
         return ratingCount;

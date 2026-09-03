@@ -35,19 +35,17 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final EventAdditionalService eventAdditionalService;
-    private final EventsRepository eventsRepository;
     private final RateRepository rateRepository;
     private final StatsClient statsClient;
 
     public CompilationServiceImpl(CompilationRepository compilationRepository,
                                   RequestAdditionalFeign requestAdditionalFeign,
-                                  EventsAdminFeign eventsAdminFeign, EventAdditionalService eventAdditionalService, EventsRepository eventsRepository,
+                               EventAdditionalService eventAdditionalService,
                                   RateRepository rateRepository,
                                   @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
         this.compilationRepository = compilationRepository;
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.eventAdditionalService = eventAdditionalService;
-        this.eventsRepository = eventsRepository;
         this.rateRepository = rateRepository;
         this.statsClient = statsClient;
     }
