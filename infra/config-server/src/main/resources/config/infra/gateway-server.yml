@@ -1,0 +1,143 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - http://localhost:3000
+              - http://localhost:5173
+              - http://localhost:8443
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowed-headers:
+              - '*'
+            exposed-headers:
+              - Location
+            allow-credentials: true
+            max-age: 3600
+      discovery:
+        locator:
+          enabled: false
+
+      routes:
+        - id: MAIN-ADMIN-Reader
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: MAIN-EVENTS-Reader
+          uri: lb://main-service
+          predicates:
+            - Path=/events/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: MAIN-CATEGORIES-Reader
+          uri: lb://main-service
+          predicates:
+            - Path=/categories/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: MAIN-COMPILATIONS-Reader
+          uri: lb://main-service
+          predicates:
+            - Path=/compilations/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: MAIN-USERS-Reader
+          uri: lb://main-service
+          predicates:
+            - Path=/users/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: MAIN-ADMIN
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/**
+
+        - id: MAIN-EVENTS
+          uri: lb://main-service
+          predicates:
+            - Path=/events/**
+
+        - id: MAIN-CATEGORIES
+          uri: lb://main-service
+          predicates:
+            - Path=/categories/**
+
+        - id: MAIN-COMPILATIONS
+          uri: lb://main-service
+          predicates:
+            - Path=/compilations/**
+
+        - id: MAIN-USERS
+          uri: lb://main-service
+          predicates:
+            - Path=/users/**
