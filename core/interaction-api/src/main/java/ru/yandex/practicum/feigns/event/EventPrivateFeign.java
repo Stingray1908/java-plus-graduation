@@ -1,8 +1,9 @@
 package ru.yandex.practicum.feigns.event;
 
+import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
@@ -15,47 +16,47 @@ import java.util.List;
 @FeignClient(name = "event-service", contextId = "eventPrivateFeign", path = "/users/{userId}/events")
 public interface EventPrivateFeign {
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto addEvent(
-            @PathVariable Long userId,
-            @RequestBody NewEventDto newEventDto
+    EventFullDto addEvent(
+            @PathVariable("userId") Long userId,
+            @Valid @RequestBody NewEventDto newEventDto
     );
 
-    @PatchMapping(value = "/{eventId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping("/{eventId}")
     @ResponseStatus(HttpStatus.OK)
     EventFullDto updateEvent(
-            @PathVariable Long userId,
-            @PathVariable Long eventId,
-            @RequestBody UpdateEventUserRequest updateEventUserRequest);
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId,
+            @Valid @RequestBody UpdateEventUserRequest updateEventUserRequest);
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<EventFullDto> getUserEvents(
-            @PathVariable Long userId,
+    List<EventFullDto> getUserEvents(
+            @PathVariable("userId") Long userId,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size);
 
     @GetMapping("/moderation")
     @ResponseStatus(HttpStatus.OK)
-    public List<EventFullDto> getUserModerationHistory(
-            @PathVariable Long userId,
+    List<EventFullDto> getUserModerationHistory(
+            @PathVariable("userId") Long userId,
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size
     );
 
     @GetMapping("/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto getUserEventById(
-            @PathVariable Long userId,
-            @PathVariable Long eventId);
+    EventFullDto getUserEventById(
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId);
 
     @GetMapping("/by-id-status-time")
     @ResponseStatus(HttpStatus.OK)
     List<EventFullDto> findEventsBySubscriberIdAndStatusAndTimeAfter(
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @RequestParam EventState state,
-            @RequestParam LocalDateTime now,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime now,
             @RequestParam(defaultValue = "0") int from,
             @RequestParam(defaultValue = "10") int size
     );
