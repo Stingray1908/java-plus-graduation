@@ -2,6 +2,7 @@ package ru.yandex.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateRequest;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateResult;
@@ -15,11 +16,12 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events/{eventId}/requests")
 @RequiredArgsConstructor
 @Slf4j
-public class RequestPrivateController implements RequestPrivateFeign {
+public class RequestPrivateController {
 
     private final RequestsService requestsService;
 
-    @Override
+    @PatchMapping
+    @ResponseStatus(HttpStatus.OK)
     public EventRequestStatusUpdateResult updateRequestStatus(
             @PathVariable Long userId,
             @PathVariable Long eventId,
@@ -36,7 +38,8 @@ public class RequestPrivateController implements RequestPrivateFeign {
         return result;
     }
 
-    @Override
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<ParticipationRequestDto> getEventRequests(
             @PathVariable Long userId,
             @PathVariable Long eventId) {

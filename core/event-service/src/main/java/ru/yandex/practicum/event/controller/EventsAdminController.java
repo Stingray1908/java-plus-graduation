@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
@@ -20,18 +21,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/events")
 @RequiredArgsConstructor
-public class EventsAdminController implements EventsAdminFeign {
+public class EventsAdminController {
 
     private final EventsService adminEventService;
-    private final EventAdditionalService eventAdditionalService;
-
-    @Override
-    public ResponseEntity<EventFullDto> getEventById(@PathVariable Long eventId){
-        EventFullDto dto = eventAdditionalService.findEventById(eventId);
-        return ResponseEntity.ok(dto);
-    }
-
-    @Override
+    @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
             @RequestParam(required = false) List<Long> users,
             @RequestParam(required = false) List<String> states,
@@ -45,7 +38,7 @@ public class EventsAdminController implements EventsAdminFeign {
         return ResponseEntity.ok(events);
     }
 
-    @Override
+    @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEventByAdmin(
             @PathVariable Long eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateRequest
@@ -54,7 +47,8 @@ public class EventsAdminController implements EventsAdminFeign {
         return ResponseEntity.ok(updatedEvent);
     }
 
-    @Override
+    @GetMapping("/moderation")
+    @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getEventsForModeration(
             @RequestParam(defaultValue = "0") Integer from,
             @RequestParam(defaultValue = "10") Integer size
@@ -66,15 +60,5 @@ public class EventsAdminController implements EventsAdminFeign {
         log.info("Получен список событий для модерации. Количество элементов: {}", events.size());
 
         return events;
-    }
-
-    @Override
-    public List<EventFullDto> getEventsByIds(List<Long> ids) {
-        return eventAdditionalService.getEventsByIds(ids);
-    }
-
-    @Override
-    public List<EventShortDto> getEventShortDtoByIdsWithStats(List<Long> ids) {
-        return eventAdditionalService.getEventShortDtoByIdsWithStats(ids);
     }
 }

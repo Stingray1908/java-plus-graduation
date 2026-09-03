@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
@@ -20,14 +21,15 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events")
 @RequiredArgsConstructor
 @Slf4j
-public class EventPrivateController implements EventPrivateFeign {
+public class EventPrivateController {
 
     private final EventsService eventsService;
 
-    @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto addEvent(
-            @PathVariable @Positive Long userId,
-            @Valid @RequestBody NewEventDto newEventDto) {
+            @Valid @RequestBody NewEventDto newEventDto,
+            @PathVariable @Positive Long userId) {
 
         log.info("Получен запрос на создание нового события для пользователя с ID: {}. Заголовок события: '{}'", userId, newEventDto.getTitle());
         log.debug("Полные данные события, полученные от клиента: {}", newEventDto);
@@ -40,7 +42,8 @@ public class EventPrivateController implements EventPrivateFeign {
         return savedEvent;
     }
 
-    @Override
+    @PatchMapping("/{eventId}")
+    @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEvent(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId,
@@ -57,7 +60,8 @@ public class EventPrivateController implements EventPrivateFeign {
         return updatedEvent;
     }
 
-    @Override
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getUserEvents(
             @PathVariable @Positive Long userId,
             @RequestParam(defaultValue = "0") @Min(0) Integer from,
@@ -71,7 +75,8 @@ public class EventPrivateController implements EventPrivateFeign {
         return userEvents;
     }
 
-    @Override
+    @GetMapping("/moderation")
+    @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getUserModerationHistory(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") Integer from,
@@ -81,7 +86,8 @@ public class EventPrivateController implements EventPrivateFeign {
         return events;
     }
 
-    @Override
+    @GetMapping("/{eventId}")
+    @ResponseStatus(HttpStatus.OK)
     public EventFullDto getUserEventById(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId) {
@@ -97,20 +103,5 @@ public class EventPrivateController implements EventPrivateFeign {
         return event;
     }
 
-    @Override
-    public List<EventFullDto> findEventsBySubscriberIdAndStatusAndTimeAfter(
-            @PathVariable @Positive Long userId,
-            @RequestParam EventState state,
-            @RequestParam LocalDateTime now,
-            @RequestParam(defaultValue = "0") @Min(0) int from,
-            @RequestParam(defaultValue = "10") @Positive int size) {
 
-        log.info("Получен запрос на получение актуальных опубликованных событий для подписчика с ID: {}, state: {}, now: {}, from: {}, size: {}",
-                userId, state, now, from, size);
-
-        List<EventFullDto> events = eventsService.findActualPublishedEventsBySubscriberId(userId, state, now, from, size);
-
-        log.info("Для подписчика с ID {} найдено {} актуальных опубликованных событий", userId, events.size());
-        return events;
-    }
 }

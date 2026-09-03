@@ -16,11 +16,11 @@ import java.util.List;
 @RequestMapping("/admin/comments")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminCommentController implements AdminCommentFeign {
+public class AdminCommentController {
 
     private final CommentService commentService;
 
-    @Override
+    @GetMapping
     public List<CommentDto> getAllComments(
             @RequestParam(required = false) Long eventId,
             @RequestParam(defaultValue = "0") Integer from,
@@ -29,7 +29,7 @@ public class AdminCommentController implements AdminCommentFeign {
         return commentService.getCommentsByEventId(eventId, from, size);
     }
 
-    @Override
+    @PatchMapping("/{commentId}")
     public CommentDto moderateComment(
             @PathVariable Long commentId,
             @Valid @RequestBody UpdateCommentByModeratorRequest request) {
@@ -38,7 +38,7 @@ public class AdminCommentController implements AdminCommentFeign {
         return commentService.updateCommentByModerator(null, commentId, request);
     }
 
-    @Override
+    @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCommentByAdmin(@PathVariable Long commentId) {
         log.info("Админ удаляет комментарий: {}", commentId);

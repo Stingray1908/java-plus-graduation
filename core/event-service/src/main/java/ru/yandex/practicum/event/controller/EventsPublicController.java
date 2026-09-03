@@ -37,7 +37,7 @@ public class EventsPublicController implements EventsPublicFeign {
         this.statsClient = statsClient;
     }
 
-    @Override
+    @GetMapping
     public ResponseEntity<List<EventShortDto>> getEvents(
             @RequestParam(required = false)
             @Size(max = 1000, message = "Text length must be less than or equal to 1000 characters")
@@ -73,7 +73,12 @@ public class EventsPublicController implements EventsPublicFeign {
 
             HttpServletRequest request
     ) {
-        EndpointHit hit = buildHit(request);
+        EndpointHit hit = EndpointHit.builder()
+                .app("ewm-main-service")
+                .uri(request.getRequestURI())
+                .ip(request.getRemoteAddr())
+                .timestamp(LocalDateTime.now())
+                .build();
         statsClient.hit(hit);
 
         List<EventShortDto> events = eventService.getPublishedEvents(
@@ -84,25 +89,20 @@ public class EventsPublicController implements EventsPublicFeign {
         return ResponseEntity.ok(events);
     }
 
-    @Override
+    @GetMapping("/{id}")
     public ResponseEntity<EventFullDto> getEventById(
             @PathVariable Long id,
             HttpServletRequest request
     ) {
-        EndpointHit hit = buildHit(request);
+        EndpointHit hit = EndpointHit.builder()
+                .app("ewm-main-service")
+                .uri(request.getRequestURI())
+                .ip(request.getRemoteAddr())
+                .timestamp(LocalDateTime.now())
+                .build();
         statsClient.hit(hit);
 
         EventFullDto event = eventService.getPublishedEventById(id);
         return ResponseEntity.ok(event);
     }
-
-    private EndpointHit buildHit(HttpServletRequest request) {
-        return EndpointHit.builder()
-                .app(appName)
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
 }

@@ -37,7 +37,8 @@ public class UserAdminController implements UserAdminFeign {
      * @return ResponseEntity с UserDto и HTTP‑статусом 201 (CREATED)
      * @throws MethodArgumentNotValidException если данные не прошли валидацию
      */
-    @Override
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
     public UserDto createUser(@Valid @RequestBody NewUserRequest request) {
         log.info("Начата обработка запроса на создание пользователя");
         log.debug("Получены данные для создания пользователя: name='{}', email='{}'",
@@ -62,7 +63,8 @@ public class UserAdminController implements UserAdminFeign {
      * @return список UserDto, соответствующий критериям поиска
      * @throws ConstraintViolationException если параметры не прошли валидацию
      */
-    @Override
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
     public List<UserDto> get(
             @RequestParam(name = "ids", required = false) List<Long> ids,
             @RequestParam(defaultValue = "0") @Min(0) int offset,
@@ -80,6 +82,24 @@ public class UserAdminController implements UserAdminFeign {
         return users;
     }
 
+    /**
+     * Удаляет пользователя по его ID.
+     *
+     * @param userId уникальный идентификатор пользователя.
+     *               Должен быть положительным числом (> 0)
+     * @throws NotFoundException если пользователь с указанным ID не найден
+     * @throws ConstraintViolationException если ID не прошёл валидацию
+     */
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("{userId}")
+    public void delete(@PathVariable @Positive Long userId) {
+        log.info("Начата обработка запроса на удаление пользователя с ID: {}", userId);
+
+        userService.deleteById(userId);
+
+        log.info("Пользователь с ID {} успешно удалён", userId);
+    }
+
     @Override
     public UserDto getById(@PathVariable @Positive Long userId) {
         UserDto userDto = userService.getById(userId);
@@ -90,22 +110,5 @@ public class UserAdminController implements UserAdminFeign {
     public List<UserDto> getAllInIds(@RequestParam List<Long> ids) {
         List<UserDto> userDtos = userService.getAllInIds(ids);
         return userDtos;
-    }
-
-    /**
-     * Удаляет пользователя по его ID.
-     *
-     * @param userId уникальный идентификатор пользователя.
-     *               Должен быть положительным числом (> 0)
-     * @throws NotFoundException если пользователь с указанным ID не найден
-     * @throws ConstraintViolationException если ID не прошёл валидацию
-     */
-    @Override
-    public void delete(@PathVariable @Positive Long userId) {
-        log.info("Начата обработка запроса на удаление пользователя с ID: {}", userId);
-
-        userService.deleteById(userId);
-
-        log.info("Пользователь с ID {} успешно удалён", userId);
     }
 }

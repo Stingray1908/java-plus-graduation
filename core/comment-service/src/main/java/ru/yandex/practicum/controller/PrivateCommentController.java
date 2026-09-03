@@ -16,11 +16,12 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateCommentController implements PrivateCommentFeign {
+public class PrivateCommentController {
 
     private final CommentService commentService;
 
-    @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public CommentDto addComment(
             @PathVariable Long userId,
             @PathVariable Long eventId,
@@ -32,13 +33,13 @@ public class PrivateCommentController implements PrivateCommentFeign {
         return comment;
     }
 
-    @Override
+    @GetMapping("/{commentId}")
     public CommentDto getComment(@PathVariable Long commentId) {
         log.info("Запрос на получение комментария: {}", commentId);
         return commentService.getCommentById(commentId);
     }
 
-    @Override
+    @GetMapping
     public List<CommentDto> getComments(
             @PathVariable Long eventId,
             @RequestParam(defaultValue = "0") Integer from,
@@ -48,7 +49,7 @@ public class PrivateCommentController implements PrivateCommentFeign {
         return commentService.getCommentsByEventId(eventId, from, size);
     }
 
-    @Override
+    @PatchMapping("/{commentId}")
     public CommentDto updateComment(
             @PathVariable Long userId,
             @PathVariable Long commentId,
@@ -58,7 +59,7 @@ public class PrivateCommentController implements PrivateCommentFeign {
         return commentService.updateCommentByAuthor(userId, commentId, request);
     }
 
-    @Override
+    @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(
             @PathVariable Long userId,

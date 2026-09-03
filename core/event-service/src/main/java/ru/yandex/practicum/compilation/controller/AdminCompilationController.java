@@ -4,11 +4,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.compilation.service.CompilationService;
 import ru.yandex.practicum.dto.compilation.CompilationDto;
 import ru.yandex.practicum.dto.compilation.NewCompilationDto;
@@ -21,17 +19,18 @@ import ru.yandex.practicum.feigns.main.compilation.AdminCompilationFeign;
 @RequiredArgsConstructor
 @Slf4j
 @Validated
-public class AdminCompilationController implements AdminCompilationFeign {
+public class AdminCompilationController {
 
     private final CompilationService compilationService;
 
-    @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto dto) {
         log.info("API Администратора: Запрос на создание подборки '{}'", dto.getTitle());
         return compilationService.createCompilation(dto);
     }
 
-    @Override
+    @PatchMapping("/{compId}")
     public CompilationDto updateCompilation(
             @Positive @PathVariable Long compId,
             @Valid @RequestBody UpdateCompilationRequest request) {
@@ -39,7 +38,8 @@ public class AdminCompilationController implements AdminCompilationFeign {
         return compilationService.updateCompilation(compId, request);
     }
 
-    @Override
+    @DeleteMapping("/{compId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@Positive @PathVariable Long compId) {
         log.info("API Администратора: Запрос на удаление подборки с ID={}", compId);
         compilationService.deleteCompilation(compId);
