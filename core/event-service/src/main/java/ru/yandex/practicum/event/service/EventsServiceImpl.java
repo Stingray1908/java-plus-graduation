@@ -33,6 +33,7 @@ import ru.yandex.practicum.event.repo.EventsRepository;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
+import ru.yandex.practicum.subscriptions.SubscriptionRepository;
 import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
 
 import java.time.LocalDateTime;
@@ -51,7 +52,7 @@ import static ru.yandex.practicum.event.mapper.EventsMapper.toEventFullDto;
 @Slf4j
 public class EventsServiceImpl implements EventsService {
     private static final int MIN_HOURS_BEFORE_EVENT = 2;
-    private final SubscriptionServiceImpl subscriptionService;
+    private final SubscriptionRepository subscriptionRepository;
     private final UserAdminFeign userAdminFeign;
     private final CategoryServiceImpl categoryService;
     private final EventsRepository eventRepository;
@@ -62,7 +63,7 @@ public class EventsServiceImpl implements EventsService {
     private final ModerationCommentRepository moderationCommentRepository;
     private final RateServiceImpl rateService;
 
-    public EventsServiceImpl(SubscriptionServiceImpl subscriptionService,
+    public EventsServiceImpl(SubscriptionRepository subscriptionRepository,
                              UserAdminFeign userAdminFeign,
                              CategoryServiceImpl categoryService,
                              EventsRepository eventRepository,
@@ -72,7 +73,7 @@ public class EventsServiceImpl implements EventsService {
                              RequestAdditionalFeign requestAdditionalFeign,
                              ModerationCommentRepository moderationCommentRepository,
                              RateServiceImpl rateService) {
-        this.subscriptionService = subscriptionService;
+        this.subscriptionRepository = subscriptionRepository;
         this.userAdminFeign = userAdminFeign;
         this.categoryService = categoryService;
         this.eventRepository = eventRepository;
@@ -538,7 +539,7 @@ public class EventsServiceImpl implements EventsService {
         var pageable = PageRequest.of(from / size, size);
 
         // 1. Получаем список ID авторов (publisher), на которых подписан subscriber
-        List<Long> publishers = subscriptionService.findPublishersBySubscriber(subscriberId);
+        List<Long> publishers = subscriptionRepository.findPublishersBySubscriber(subscriberId);
 
         // Если подписок нет — сразу возвращаем пустой список, не дёргая БД
         if (publishers == null || publishers.isEmpty()) {

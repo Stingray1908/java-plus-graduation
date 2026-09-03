@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.event.service.EventAdditionalService;
+import ru.yandex.practicum.event.entity.Event;
+import ru.yandex.practicum.event.repo.EventsRepository;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.rating.entity.Rate;
 import ru.yandex.practicum.rating.repo.RateRepository;
@@ -24,20 +24,20 @@ public class RateServiceImpl implements RateService {
 
     private final RateRepository rateRepository;
     private final UserAdminFeign userAdminFeign;
-    private final EventAdditionalService eventAdditionalService;
+    private final EventsRepository eventsRepository;
 
     @Override
     public void addRate(Long userId, Long eventId, Boolean isLike) {
         log.info("Пользователь ID={} ставит {} событию ID={}", userId, isLike ? "ЛАЙК" : "ДИЗЛАЙК", eventId);
 
         UserDto user = getUserById(userId);
-        EventFullDto event = getEventById(eventId);
+        Event event = getEventById(eventId);
 
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new ConflictException("Нельзя оценивать неопубликованные события");
         }
 
-        if (event.getInitiator().getId().equals(userId)) {
+        if (event.getInitiatorId().equals(userId)) {
             throw new ConflictException("Инициатор не может оценивать собственное событие");
         }
 
@@ -76,8 +76,8 @@ public class RateServiceImpl implements RateService {
         return user;
     }
 
-    private EventFullDto getEventById(Long id) {
-        return eventAdditionalService.findEventById(id);
+    private Event getEventById(Long id) {
+        return eventsRepository.findById(id).orElseThrow(() -> new NotFoundException("событие не существует"));
 
     }
 }
