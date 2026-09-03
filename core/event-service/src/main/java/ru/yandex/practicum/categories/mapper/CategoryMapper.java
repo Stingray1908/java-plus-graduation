@@ -1,7 +1,7 @@
 package ru.yandex.practicum.categories.mapper;
 
-import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.categories.entity.Category;
+import ru.yandex.practicum.dto.categories.CategoryDto;
 
 public class CategoryMapper {
 

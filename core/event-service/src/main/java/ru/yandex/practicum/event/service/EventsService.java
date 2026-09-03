@@ -85,4 +85,10 @@ public interface EventsService {
             int size
     );
 
+    EventFullDto findEventById(Long id);
+
+    List<EventFullDto> getEventsByIds(List<Long> ids);
+
+    List<EventShortDto> getEventShortDtoByIdsWithStats(List<Long> ids);
+
 }

@@ -82,23 +82,7 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: EVENT-PRIVATE-Reader
-          uri: lb://event-service
-          predicates:
-            - Path=/users/{userId}/events/**
-          filters:
-            - name: Retry
-              args:
-                retries: 2
-                statuses:
-                  - BAD_GATEWAY
-                  - SERVICE_UNAVAILABLE
-                  - GATEWAY_TIMEOUT
-                methods:
-                  - GET
-                backoff:
-                  firstBackoff: 100ms
-                  maxBackoff: 500ms
+
 
         - id: EVENT-PUBLIC-Reader
           uri: lb://event-service
@@ -173,7 +157,7 @@ spring:
                   maxBackoff: 500ms
 
         - id: MAIN-CATEGORIES-PUBLIC-Reader
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/categories/**
           filters:
@@ -191,7 +175,7 @@ spring:
                   maxBackoff: 500ms
 
         - id: MAIN-COMPILATIONS-PUBLIC-Reader
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/compilations/**
           filters:
@@ -209,9 +193,27 @@ spring:
                   maxBackoff: 500ms
 
         - id: MAIN-SUBSCRIPTION-PRIVATE-Reader
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/users/{userId}/subscriptions/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: EVENT-PRIVATE-Reader
+          uri: lb://event-service
+          predicates:
+            - Path=/users/{userId}/events/**
           filters:
             - name: Retry
               args:
@@ -268,31 +270,36 @@ spring:
 
 
         - id: MAIN-CATEGORIES-ADMIN
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/admin/categories/**
 
         - id: MAIN-COMPILATIONS-ADMIN
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/admin/compilations/**
 
         - id: MAIN-PRIVATE-SUBSCRIPTIONS
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/users/{userId}/subscriptions/**
 
         - id: MAIN-RATE-PRIVATE
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/users/{userId}/events/{eventId}/rate/**
 
         - id: MAIN-RATE-ADDITIONAL
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/users/events/rate/**
 
         - id: REQUEST-ADDITIONAL
-          uri: lb://main-service
+          uri: lb://event-service
           predicates:
             - Path=/users/requests/**
+
+        - id: categories-ADDITIONAL
+          uri: lb://event-service
+          predicates:
+            - Path=/categories/**

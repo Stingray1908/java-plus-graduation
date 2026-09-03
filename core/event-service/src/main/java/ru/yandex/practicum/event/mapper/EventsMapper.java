@@ -1,21 +1,31 @@
 package ru.yandex.practicum.event.mapper;
 
+import lombok.AllArgsConstructor;
+import ru.yandex.practicum.categories.repo.CategoryRepository;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.events.Location;
 import ru.yandex.practicum.dto.events.NewEventDto;
-import ru.yandex.practicum.event.entity.Event;
+import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.event.moderation.ModerationComment;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
 
 import java.time.LocalDateTime;
 
 import static ru.yandex.practicum.Constance.FORMATTER;
+import static ru.yandex.practicum.categories.mapper.CategoryMapper.toCategoryDto;
 import static ru.yandex.practicum.event.moderation.ModerationMapper.moderationCommentShortDto;
 
+@AllArgsConstructor
 public class EventsMapper {
 
+
+
     public static EventShortDto toShortEventDto(Event event, Long confirmedRequests) {
+        //UserDto user = userAdminFeign.getById(event.getInitiatorId());
         EventShortDto dto = new EventShortDto();
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
@@ -23,8 +33,8 @@ public class EventsMapper {
         dto.setEventDate(event.getEventDate().format(FORMATTER));
         dto.setPaid(event.getPaid());
         dto.setTitle(event.getTitle());
-        //dto.setCategory(toCategoryDto(event.getCategory()));
-        //dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
+        //dto.setCategory(toCategoryDto(categoryRepository.getReferenceById(event.getId())));
+        //dto.setInitiator(new UserShortDto(user.getId(), user.getName()));
 
 
         return dto;
@@ -45,14 +55,15 @@ public class EventsMapper {
 
     public static EventFullDto toEventFullDto(Event event) {
         EventFullDto dto = new EventFullDto();
+        //UserDto user = userAdminFeign.getById(event.getInitiatorId());
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
-        //dto.setCategory(toCategoryDto(event.getCategory()));
+        //dto.setCategory(toCategoryDto(categoryRepository.getReferenceById(event.getCategoryId())));
         dto.setConfirmedRequests(event.getConfirmedRequests());
         dto.setCreatedOn(format(event.getCreatedOn()));
         dto.setDescription(event.getDescription());
         dto.setEventDate(event.getEventDate().format(FORMATTER));
-       // dto.setInitiator(new UserMapper().toShortDto(event.getInitiator()));
+        //dto.setInitiator(new UserShortDto(user.getId(), user.getName()));
         dto.setLocation(new Location(event.getLocationLat(), event.getLocationLon()));
         dto.setPaid(event.getPaid());
         dto.setParticipantLimit(event.getParticipantLimit());
@@ -84,8 +95,8 @@ public class EventsMapper {
     /**
      * Преобразует DTO нового события в сущность Event.
      *
-     * @param dto  DTO с данными нового события
-    // * @param user пользователь-инициатор события
+     * @param dto DTO с данными нового события
+     *            // * @param user пользователь-инициатор события
      * @return сущность Event, готовая для сохранения в БД
      */
     public static Event toEvent(NewEventDto dto, Long user, Long category) {
@@ -102,7 +113,7 @@ public class EventsMapper {
                 .locationLon(dto.getLocation().getLon())
                 .createdOn(LocalDateTime.now())
                 .state(EventState.PENDING)
-               .initiatorId(user)
+                .initiatorId(user)
                 .confirmedRequests(0L)
                 .views(0L)
                 .build();

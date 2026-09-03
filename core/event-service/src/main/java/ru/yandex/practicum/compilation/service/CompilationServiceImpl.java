@@ -16,7 +16,7 @@ import ru.yandex.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.event.service.EventAdditionalService;
+import ru.yandex.practicum.event.service.EventsService;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.rating.repo.RateRepository;
 
@@ -32,18 +32,17 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final RequestAdditionalFeign requestAdditionalFeign;
-    private final EventAdditionalService eventAdditionalService;
+    private final EventsService eventsService;
     private final RateRepository rateRepository;
     private final StatsClient statsClient;
 
     public CompilationServiceImpl(CompilationRepository compilationRepository,
-                                  RequestAdditionalFeign requestAdditionalFeign,
-                                  EventAdditionalService eventAdditionalService,
+                                  RequestAdditionalFeign requestAdditionalFeign, EventsService eventsService,
                                   RateRepository rateRepository,
                                   @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
         this.compilationRepository = compilationRepository;
         this.requestAdditionalFeign = requestAdditionalFeign;
-        this.eventAdditionalService = eventAdditionalService;
+        this.eventsService = eventsService;
         this.rateRepository = rateRepository;
         this.statsClient = statsClient;
     }
@@ -185,7 +184,7 @@ public class CompilationServiceImpl implements CompilationService {
         Map<Long, EventShortDto> eventDtoMap;
 
         if (!allEvents.isEmpty()) {
-            List<EventShortDto> shortDtos = eventAdditionalService.getEventShortDtoByIdsWithStats(allEvents);
+            List<EventShortDto> shortDtos = eventsService.getEventShortDtoByIdsWithStats(allEvents);
             eventDtoMap = shortDtos.stream()
                     .collect(Collectors.toMap(EventShortDto::getId, dto -> dto));
         } else {

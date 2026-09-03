@@ -18,6 +18,7 @@ import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
 import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.enums.StateAction;
@@ -33,55 +34,99 @@ import ru.yandex.practicum.event.repo.EventsRepository;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
+import ru.yandex.practicum.subscriptions.SubscriptionRepository;
 import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.event.mapper.EventsMapper.toEvent;
-import static ru.yandex.practicum.event.mapper.EventsMapper.toEventFullDto;
+import static java.util.stream.Collectors.toList;
+import static ru.yandex.practicum.event.mapper.EventsMapper.*;
 
 @Service
 @Transactional
 @Slf4j
 public class EventsServiceImpl implements EventsService {
     private static final int MIN_HOURS_BEFORE_EVENT = 2;
-    private final SubscriptionServiceImpl subscriptionService;
+    private final SubscriptionRepository subscriptionRepository;
     private final UserAdminFeign userAdminFeign;
     private final CategoryServiceImpl categoryService;
     private final EventsRepository eventRepository;
-    private final EventAdditionalService eventAdditionalService;
     private final StatsClient statsClient;
     private final EntityManager entityManager;
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final ModerationCommentRepository moderationCommentRepository;
     private final RateServiceImpl rateService;
 
-    public EventsServiceImpl(SubscriptionServiceImpl subscriptionService,
+    public EventsServiceImpl(SubscriptionRepository subscriptionRepository,
                              UserAdminFeign userAdminFeign,
                              CategoryServiceImpl categoryService,
                              EventsRepository eventRepository,
-                             EventAdditionalService eventAdditionalService,
                              @Qualifier("StatsClientDiscovery") StatsClient statsClient,
                              EntityManager entityManager,
                              RequestAdditionalFeign requestAdditionalFeign,
                              ModerationCommentRepository moderationCommentRepository,
                              RateServiceImpl rateService) {
-        this.subscriptionService = subscriptionService;
+        this.subscriptionRepository = subscriptionRepository;
         this.userAdminFeign = userAdminFeign;
         this.categoryService = categoryService;
         this.eventRepository = eventRepository;
-        this.eventAdditionalService = eventAdditionalService;
         this.statsClient = statsClient;
         this.entityManager = entityManager;
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.moderationCommentRepository = moderationCommentRepository;
         this.rateService = rateService;
+    }
+
+    @Override
+    public EventFullDto findEventById(Long id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Comment not found"));
+        EventFullDto dto = toEventFullDto(event);
+
+        return dto;
+    }
+
+    @Override
+    public List<EventFullDto> getEventsByIds(List<Long> ids) {
+        List<Event> events = eventRepository.findAllById(ids);
+        return events.stream()
+                .map(EventsMapper::toEventFullDto)
+                .toList();
+    }
+
+    @Override
+    public List<EventShortDto> getEventShortDtoByIdsWithStats(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> uniqueIds = ids.stream().distinct().toList();
+        List<Event> events = eventRepository.findAllById(uniqueIds);
+        if (events.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, UserDto> userMap = getUserMap(events);
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
+        Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(uniqueIds);
+        Map<Long, Long> views = getViewsMap(uniqueIds);
+        Map<Long, Long> ratings = getRatingsMap(uniqueIds);
+
+        return events.stream()
+                .map(event -> {
+                    EventShortDto dto = toShortEventDto(
+                            event,
+                            confirmedRequests.getOrDefault(event.getId(), 0L),
+                            ratings.getOrDefault(event.getId(), 0L),
+                            views.getOrDefault(event.getId(), 0L)
+                    );
+                    enrichShortEventDtoWithUserAndCategory(dto, event, userMap, categoryMap);
+                    return dto;
+                })
+                .toList();
     }
 
     @Override
@@ -125,7 +170,7 @@ public class EventsServiceImpl implements EventsService {
         Map<Long, Long> requestCounts = getConfirmedRequestsMap(eventIds);
         Map<Long, Long> ratingsMap = getRatingsMap(events);
 */
-        List<EventShortDto> dtoList = eventAdditionalService.getEventShortDtoByIdsWithStats(eventIds);
+        List<EventShortDto> dtoList = getEventShortDtoByIdsWithStats(eventIds);
         /*events.stream()
                 .map(event -> toShortEventDto(event, requestCounts.getOrDefault(event.getId(), 0L), ratingsMap.getOrDefault(event.getId(), 0L)))
                 .collect(Collectors.toList());
@@ -206,7 +251,7 @@ public class EventsServiceImpl implements EventsService {
         List<Long> ids = events.stream().map(Event::getId).toList();
         Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(ids);
 
-        Map<Long, Long> ratings = getRatingsMap(events);
+        Map<Long, Long> ratings = getRatingsMap(ids);
         setViewsToEvents(events);
 
         return events.stream()
@@ -341,7 +386,7 @@ public class EventsServiceImpl implements EventsService {
 
         List<Long> ids = events.stream().map(Event::getId).toList();
         Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(ids);
-        Map<Long, Long> ratings = getRatingsMap(events);
+        Map<Long, Long> ratings = getRatingsMap(ids);
 
         List<EventFullDto> eventFullDtos = events.stream()
                 .peek(event -> event.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L)))
@@ -439,15 +484,6 @@ public class EventsServiceImpl implements EventsService {
                 ));
     }*/
 
-    private Map<Long, Long> getRatingsMap(List<Event> events) {
-        if (events.isEmpty()) return Map.of();
-        List<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
-        List<Object[]> results = rateService.getRatingsForEvents(eventIds);
-        return results.stream().collect(Collectors.toMap(
-                row -> ((Number) row[0]).longValue(),
-                row -> ((Number) row[1]).longValue()
-        ));
-    }
 
     private <T extends UpdateEventRequest> void applyNonNullUpdates(Event event, T request) {
         if (request.getAnnotation() != null) event.setAnnotation(request.getAnnotation());
@@ -521,7 +557,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private EventFullDto getEventById(Long id) {
-        return eventAdditionalService.findEventById(id);
+        return findEventById(id);
     }
 
     @Override
@@ -538,7 +574,7 @@ public class EventsServiceImpl implements EventsService {
         var pageable = PageRequest.of(from / size, size);
 
         // 1. Получаем список ID авторов (publisher), на которых подписан subscriber
-        List<Long> publishers = subscriptionService.findPublishersBySubscriber(subscriberId);
+        List<Long> publishers = subscriptionRepository.findPublishersBySubscriber(subscriberId);
 
         // Если подписок нет — сразу возвращаем пустой список, не дёргая БД
         if (publishers == null || publishers.isEmpty()) {
@@ -577,4 +613,99 @@ public class EventsServiceImpl implements EventsService {
 
         return ratingCount;
     }
+
+    private Map<Long, Long> getViewsMap(List<Long> events) {
+        if (events.isEmpty()) return Map.of();
+
+        List<String> uris = events.stream()
+                .map(e -> "/events/" + e)
+                .collect(toList());
+
+        LocalDateTime start = LocalDateTime.now().minusYears(10);
+        LocalDateTime end = LocalDateTime.now();
+
+        List<ViewStats> stats;
+        try {
+            stats = statsClient.getStats(start, end, uris, true);
+        } catch (Exception e) {
+            log.error("Ошибка при получении статистики", e);
+            return Map.of();
+        }
+
+        Map<Long, Long> viewsMap = new HashMap<>();
+        for (ViewStats stat : stats) {
+            String uri = stat.getUri();
+            if (uri.startsWith("/events/")) {
+                try {
+                    Long eventId = Long.parseLong(uri.substring("/events/".length()));
+                    viewsMap.put(eventId, stat.getHits());
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return viewsMap;
+    }
+
+    private Map<Long, Long> getRatingsMap(List<Long> eventIds) {
+        if (eventIds.isEmpty()) return Map.of();
+
+        List<Object[]> results = rateService.getRatingsForEvents(eventIds);
+        return results.stream().collect(Collectors.toMap(
+                row -> ((Number) row[0]).longValue(),
+                row -> ((Number) row[1]).longValue()
+        ));
+    }
+
+    private Map<Long, UserDto> getUserMap(List<Event> events) {
+        List<Long> userIds = events.stream()
+                .map(Event::getInitiatorId)
+                .distinct()
+                .toList();
+        if (userIds.isEmpty()) return Map.of();
+        return userAdminFeign.getAllInIds(userIds).stream()
+                .collect(Collectors.toMap(UserDto::getId, Function.identity()));
+    }
+
+    private Map<Long, CategoryDto> getCategoryMap(List<Event> events) {
+        List<Long> categoryIds = events.stream()
+                .map(Event::getCategoryId)
+                .distinct()
+                .toList();
+        if (categoryIds.isEmpty()) return Map.of();
+        return categoryIds.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        categoryService::getCategoryById
+                ));
+    }
+
+    private void enrichShortEventDtoWithUserAndCategory(EventShortDto dto, Event event,
+                                                        Map<Long, UserDto> userMap,
+                                                        Map<Long, CategoryDto> categoryMap) {
+        UserDto user = userMap.get(event.getInitiatorId());
+        if (user != null) {
+            dto.setInitiator(new UserShortDto(user.getId(), user.getName()));
+        }
+
+        CategoryDto category = categoryMap.get(event.getCategoryId());
+        if (category != null) {
+            dto.setCategory(category);
+        }
+    }
+
+    private void enrichFullEventDtoWithUserAndCategory(EventFullDto dto, Event event,
+                                                       Map<Long, UserDto> userMap,
+                                                       Map<Long, CategoryDto> categoryMap) {
+        UserDto user = userMap.get(event.getInitiatorId());
+        if (user != null) {
+            dto.setInitiator(new UserShortDto(user.getId(), user.getName()));
+        }
+
+        CategoryDto category = categoryMap.get(event.getCategoryId());
+        if (category != null) {
+            dto.setCategory(category);
+        }
+    }
+
+
 }

@@ -10,8 +10,7 @@ import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.event.service.EventAdditionalService;
-import ru.yandex.practicum.event.service.EventsServiceImpl;
+import ru.yandex.practicum.event.service.EventsService;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 
@@ -27,9 +26,8 @@ import java.util.stream.Collectors;
 public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final UserAdminFeign userAdminFeign;
-    private final EventAdditionalService eventAdditionalService;
     private final RequestAdditionalFeign requestAdditionalFeign;
-    private final EventsServiceImpl eventsService;
+    private final EventsService eventsService;
 
 
     @Override
@@ -92,7 +90,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         //Map<Long, Long> confirmedRequests = getConfirmedRequests(ids);
 
-        return eventAdditionalService.getEventShortDtoByIdsWithStats(ids);
+        return eventsService.getEventShortDtoByIdsWithStats(ids);
         /* events.stream()
                 .map(event -> EventsMapper.toShortEventDto(event, confirmedRequests.getOrDefault(event.getId(), 0L)))
                 .collect(Collectors.toList());*/
@@ -122,6 +120,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     private EventFullDto getEventById(Long id) {
-        return eventAdditionalService.findEventById(id);
+        return eventsService.findEventById(id);
     }
 }
