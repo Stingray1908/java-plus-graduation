@@ -3,12 +3,9 @@ package ru.yandex.practicum.participation.controller;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
-import ru.yandex.practicum.feigns.request.ParticipationRequestPrivateFeign;
 import ru.yandex.practicum.participation.service.ParticipationsRequestsService;
 
 import java.util.List;
@@ -17,11 +14,12 @@ import java.util.List;
 @RequestMapping("/users/{userId}/requests")
 @RequiredArgsConstructor
 @Slf4j
-public class ParticipationRequestPrivateController implements ParticipationRequestPrivateFeign {
+public class ParticipationRequestPrivateController {
 
     private final ParticipationsRequestsService participationsRequestsService;
 
-    @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto createParticipationRequest(
             @PathVariable @Positive Long userId,
             @RequestParam @Positive Long eventId) {
@@ -33,7 +31,8 @@ public class ParticipationRequestPrivateController implements ParticipationReque
         return createdRequest;
     }
 
-    @Override
+    @PatchMapping("/{requestId}/cancel")
+    @ResponseStatus(HttpStatus.OK)
     public ParticipationRequestDto cancelParticipationRequest(
             @PathVariable Long userId,
             @PathVariable Long requestId) {
@@ -42,7 +41,8 @@ public class ParticipationRequestPrivateController implements ParticipationReque
         return cancelledRequest;
     }
 
-    @Override
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<ParticipationRequestDto> getUserParticipationRequests(
             @PathVariable @Positive Long userId) {
         log.info("Получен запрос на получение заявок пользователя с ID: {}", userId);

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.rating.service.RateService;
-import ru.yandex.practicum.feigns.main.rate.RatePrivateFeign;
 
 @RestController
 @RequestMapping("/users/{userId}/events/{eventId}/rate")

@@ -10,11 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.NewEventDto;
 import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
-import ru.yandex.practicum.enums.EventState;
-import ru.yandex.practicum.feigns.event.EventPrivateFeign;
 import ru.yandex.practicum.event.service.EventsService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController

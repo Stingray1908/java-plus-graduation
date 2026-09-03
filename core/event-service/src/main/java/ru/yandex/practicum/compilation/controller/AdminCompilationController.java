@@ -11,7 +11,6 @@ import ru.yandex.practicum.compilation.service.CompilationService;
 import ru.yandex.practicum.dto.compilation.CompilationDto;
 import ru.yandex.practicum.dto.compilation.NewCompilationDto;
 import ru.yandex.practicum.dto.compilation.UpdateCompilationRequest;
-import ru.yandex.practicum.feigns.main.compilation.AdminCompilationFeign;
 
 
 @RestController

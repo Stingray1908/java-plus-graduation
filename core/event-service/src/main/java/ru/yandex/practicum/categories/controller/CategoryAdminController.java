@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.categories.service.CategoryService;
 import ru.yandex.practicum.dto.categories.CategoryDto;
-import ru.yandex.practicum.feigns.main.category.CategoryAdminFeign;
 
 @RestController
 @RequestMapping("/admin/categories")

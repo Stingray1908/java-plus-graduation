@@ -8,10 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventFullDto;
-import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
-import ru.yandex.practicum.event.service.EventAdditionalService;
 import ru.yandex.practicum.event.service.EventsService;
 
 import java.time.LocalDateTime;
@@ -24,6 +21,7 @@ import java.util.List;
 public class EventsAdminController {
 
     private final EventsService adminEventService;
+
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
             @RequestParam(required = false) List<Long> users,

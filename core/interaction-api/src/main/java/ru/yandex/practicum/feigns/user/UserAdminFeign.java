@@ -14,17 +14,6 @@ import java.util.List;
 @FeignClient(name = "user-service", contextId = "userAdminFeign", path = "/admin/users")
 public interface UserAdminFeign {
 
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    UserDto createUser(@Valid @RequestBody NewUserRequest request);
-
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping
-    List<UserDto> get(
-            @RequestParam(name = "ids", required = false) List<Long> ids,
-            @RequestParam(defaultValue = "0") @Min(0) int offset,
-            @RequestParam(defaultValue = "10") @Min(1) int size);
-
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("{userId}")
     public UserDto getById(@PathVariable @Positive Long userId);
@@ -32,8 +21,4 @@ public interface UserAdminFeign {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("inIds")
     List<UserDto> getAllInIds(@RequestParam List<Long> ids);
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("{userId}")
-    void delete(@PathVariable @Positive Long userId);
 }

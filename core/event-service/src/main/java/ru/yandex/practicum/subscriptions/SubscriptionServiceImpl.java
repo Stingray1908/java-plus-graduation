@@ -2,7 +2,6 @@ package ru.yandex.practicum.subscriptions;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.events.EventFullDto;
@@ -13,8 +12,6 @@ import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.event.service.EventAdditionalService;
 import ru.yandex.practicum.event.service.EventsServiceImpl;
-import ru.yandex.practicum.feigns.event.EventPrivateFeign;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 

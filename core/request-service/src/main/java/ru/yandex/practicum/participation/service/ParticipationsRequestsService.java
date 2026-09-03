@@ -12,7 +12,7 @@ import ru.yandex.practicum.entity.ParticipationRequest;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.event.EventsPublicFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.mapper.RequestsMapper;
 import ru.yandex.practicum.repo.RequestRepository;
@@ -32,7 +32,7 @@ public class ParticipationsRequestsService {
 
     private final RequestRepository requestRepository;
     private final UserAdminFeign userAdminFeign;
-    private final EventsAdminFeign eventsAdminFeign;
+    private final EventsPublicFeign eventsAdminFeign;
 
     @Transactional
     public ParticipationRequestDto createParticipationRequest(Long userId, Long eventId) {
@@ -139,7 +139,7 @@ public class ParticipationsRequestsService {
                 .collect(Collectors.toList());
     }
 
-    private UserDto getUserById (Long id) {
+    private UserDto getUserById(Long id) {
         UserDto user = userAdminFeign.getById(id);
         if (user == null) {
             throw new NotFoundException("пользователь не найден");
@@ -147,8 +147,8 @@ public class ParticipationsRequestsService {
         return user;
     }
 
-    private EventFullDto getEventById (Long id) {
-        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+    private EventFullDto getEventById(Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventByIdInside(id);
         if (!event.getStatusCode().is2xxSuccessful()) {
             throw new NotFoundException("событие не найдено");
         }

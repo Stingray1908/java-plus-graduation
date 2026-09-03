@@ -7,6 +7,7 @@ import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.service.RequestsServiceImpl;
 
 import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class RequestAdditionalController implements RequestAdditionalFeign {

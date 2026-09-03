@@ -2,20 +2,17 @@ package ru.yandex.practicum.rating.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.event.service.EventAdditionalService;
-import ru.yandex.practicum.event.service.EventsServiceImpl;
-import ru.yandex.practicum.rating.entity.Rate;
-import ru.yandex.practicum.rating.repo.RateRepository;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.event.service.EventAdditionalService;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
+import ru.yandex.practicum.rating.entity.Rate;
+import ru.yandex.practicum.rating.repo.RateRepository;
 
 import java.util.List;
 

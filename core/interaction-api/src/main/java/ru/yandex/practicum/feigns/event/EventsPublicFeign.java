@@ -17,9 +17,8 @@ import java.util.List;
 @FeignClient(name = "event-service", contextId = "eventsPublicFeign", path = "/events")
 public interface EventsPublicFeign {
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EventFullDto> getEventById(
-            @PathVariable Long id,
-            HttpServletRequest request
+    @GetMapping("/{id}/inside")
+    public ResponseEntity<EventFullDto> getEventByIdInside(
+            @PathVariable Long id
     );
 }

@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.request.EventRequestStatusUpdateRequest;
@@ -16,7 +15,7 @@ import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.feigns.event.EventsPublicFeign;
 import ru.yandex.practicum.mapper.RequestsMapper;
 import ru.yandex.practicum.repo.RequestRepository;
 
@@ -29,7 +28,7 @@ import java.util.List;
 public class RequestsServiceImpl implements RequestsService {
 
     private final RequestRepository requestRepository;
-    private final EventsAdminFeign eventsAdminFeign;
+    private final EventsPublicFeign eventsAdminFeign;
 
     @Override
     @SneakyThrows
@@ -116,15 +115,15 @@ public class RequestsServiceImpl implements RequestsService {
         return RequestsMapper.toDtoList(requests);
     }
 
-    private EventFullDto getEventById (Long id) {
-        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+    private EventFullDto getEventById(Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventByIdInside(id);
         if (!event.getStatusCode().is2xxSuccessful()) {
             throw new NotFoundException("событие не найдено");
         }
         return event.getBody();
     }
 
-    public List<Object[]> countRequestsByEventIdsAndStatus(List<Long> eventIds, EventState status){
+    public List<Object[]> countRequestsByEventIdsAndStatus(List<Long> eventIds, EventState status) {
         return requestRepository.countRequestsByEventIdsAndStatus(eventIds, status);
     }
 }

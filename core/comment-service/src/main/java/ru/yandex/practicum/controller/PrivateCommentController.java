@@ -9,7 +9,6 @@ import ru.yandex.practicum.dto.comments.CommentDto;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByAuthorRequest;
 import ru.yandex.practicum.service.CommentService;
-import ru.yandex.practicum.feigns.comments.PrivateCommentFeign;
 
 import java.util.List;
 

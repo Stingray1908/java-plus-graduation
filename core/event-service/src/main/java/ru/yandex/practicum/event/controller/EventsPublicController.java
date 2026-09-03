@@ -12,9 +12,9 @@ import ru.yandex.practicum.dto.EndpointHit;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.enums.EventsSortType;
-
-import ru.yandex.practicum.feigns.event.EventsPublicFeign;
+import ru.yandex.practicum.event.service.EventAdditionalService;
 import ru.yandex.practicum.event.service.EventsService;
+import ru.yandex.practicum.feigns.event.EventsPublicFeign;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,16 +25,18 @@ public class EventsPublicController implements EventsPublicFeign {
 
     private final EventsService eventService;
     private final StatsClient statsClient;
+    private final EventAdditionalService eventAdditionalService;
 
     @Value("${spring.application.name}")
     private String appName;
 
     public EventsPublicController(
             EventsService eventService,
-            @Qualifier("StatsClientDiscovery") StatsClient statsClient
+            @Qualifier("StatsClientDiscovery") StatsClient statsClient, EventAdditionalService eventAdditionalService
     ) {
         this.eventService = eventService;
         this.statsClient = statsClient;
+        this.eventAdditionalService = eventAdditionalService;
     }
 
     @GetMapping
@@ -89,6 +91,14 @@ public class EventsPublicController implements EventsPublicFeign {
         return ResponseEntity.ok(events);
     }
 
+    @GetMapping("/{id}/inside")
+    public ResponseEntity<EventFullDto> getEventByIdInside(
+            @PathVariable Long id) {
+
+        EventFullDto event = eventAdditionalService.findEventById(id);
+        return ResponseEntity.ok(event);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<EventFullDto> getEventById(
             @PathVariable Long id,
@@ -105,4 +115,5 @@ public class EventsPublicController implements EventsPublicFeign {
         EventFullDto event = eventService.getPublishedEventById(id);
         return ResponseEntity.ok(event);
     }
+
 }

@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.compilation.service.CompilationService;
 import ru.yandex.practicum.dto.compilation.CompilationDto;
-import ru.yandex.practicum.feigns.main.compilation.PublicCompilationFeign;
 
 import java.util.List;
 

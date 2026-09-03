@@ -7,14 +7,12 @@ import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
-import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
+import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.event.mapper.EventsMapper;
 import ru.yandex.practicum.event.repo.EventsRepository;
-import ru.yandex.practicum.rating.service.RateService;
+import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
 
 import java.time.LocalDateTime;

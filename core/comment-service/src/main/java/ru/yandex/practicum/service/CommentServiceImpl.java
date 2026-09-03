@@ -15,7 +15,8 @@ import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.entity.Comment;
 import ru.yandex.practicum.enums.CommentStatus;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+
+import ru.yandex.practicum.feigns.event.EventsPublicFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.mapper.CommentMapper;
 import ru.yandex.practicum.repo.CommentRepository;
@@ -35,7 +36,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final UserAdminFeign userAdminFeign;
-    private final EventsAdminFeign eventsAdminFeign;
+    private final EventsPublicFeign eventsAdminFeign;
 
     @Transactional
     @Override
@@ -153,7 +154,7 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.deleteById(commentId);
     }
 
-    private UserDto getUserById (Long id) {
+    private UserDto getUserById(Long id) {
         UserDto user = userAdminFeign.getById(id);
         if (user == null) {
             throw new NotFoundException("пользователь не найден");
@@ -161,8 +162,8 @@ public class CommentServiceImpl implements CommentService {
         return user;
     }
 
-    private EventFullDto getEventById (Long id) {
-        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
+    private EventFullDto getEventById(Long id) {
+        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventByIdInside(id);
         if (!event.getStatusCode().is2xxSuccessful()) {
             throw new NotFoundException("событие не найдено");
         }

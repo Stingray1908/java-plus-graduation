@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.categories.service.CategoryServiceImpl;
@@ -19,7 +18,6 @@ import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
 import ru.yandex.practicum.dto.user.UserDto;
-import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.enums.StateAction;
@@ -27,17 +25,13 @@ import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.EventCreationRuleException;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
-import ru.yandex.practicum.feigns.main.category.CategoryPublicFeign;
-import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
-import ru.yandex.practicum.feigns.main.subscriptions.PrivateSubscriptionFeign;
-import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
-import ru.yandex.practicum.feigns.user.UserAdminFeign;
+import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.event.mapper.EventsMapper;
 import ru.yandex.practicum.event.moderation.ModerationComment;
 import ru.yandex.practicum.event.moderation.ModerationCommentRepository;
 import ru.yandex.practicum.event.repo.EventsRepository;
-import ru.yandex.practicum.rating.service.RateService;
+import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
+import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
 import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
 
@@ -49,7 +43,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.event.mapper.EventsMapper.*;
+import static ru.yandex.practicum.event.mapper.EventsMapper.toEvent;
+import static ru.yandex.practicum.event.mapper.EventsMapper.toEventFullDto;
 
 @Service
 @Transactional

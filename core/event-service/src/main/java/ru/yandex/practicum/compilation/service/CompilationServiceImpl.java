@@ -10,17 +10,15 @@ import ru.yandex.practicum.compilation.entity.Compilation;
 import ru.yandex.practicum.compilation.mapper.CompilationMapper;
 import ru.yandex.practicum.compilation.repo.CompilationRepository;
 import ru.yandex.practicum.dto.ViewStats;
-import ru.yandex.practicum.event.repo.EventsRepository;
-import ru.yandex.practicum.event.service.EventAdditionalService;
-import ru.yandex.practicum.rating.repo.RateRepository;
 import ru.yandex.practicum.dto.compilation.CompilationDto;
 import ru.yandex.practicum.dto.compilation.NewCompilationDto;
 import ru.yandex.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.NotFoundException;
-import ru.yandex.practicum.feigns.event.EventsAdminFeign;
+import ru.yandex.practicum.event.service.EventAdditionalService;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
+import ru.yandex.practicum.rating.repo.RateRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,7 +38,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     public CompilationServiceImpl(CompilationRepository compilationRepository,
                                   RequestAdditionalFeign requestAdditionalFeign,
-                               EventAdditionalService eventAdditionalService,
+                                  EventAdditionalService eventAdditionalService,
                                   RateRepository rateRepository,
                                   @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
         this.compilationRepository = compilationRepository;

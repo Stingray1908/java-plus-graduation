@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.yandex.practicum.feigns.main.subscriptions.PrivateSubscriptionFeign;
 
 import java.util.List;
 
