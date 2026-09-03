@@ -1,4 +1,4 @@
-package ru.yandex.practicum.moderation;
+package ru.yandex.practicum.event.moderation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

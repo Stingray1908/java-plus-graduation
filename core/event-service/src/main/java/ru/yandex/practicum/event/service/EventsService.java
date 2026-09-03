@@ -1,4 +1,4 @@
-package ru.yandex.practicum.service;
+package ru.yandex.practicum.event.service;
 
 import ru.yandex.practicum.dto.events.*;
 import ru.yandex.practicum.enums.EventState;

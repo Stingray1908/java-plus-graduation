@@ -1,4 +1,4 @@
-package ru.yandex.practicum.controller;
+package ru.yandex.practicum.event.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +10,8 @@ import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.events.UpdateEventAdminRequest;
 import ru.yandex.practicum.feigns.event.EventsAdminFeign;
-import ru.yandex.practicum.service.EventAdditionalService;
-import ru.yandex.practicum.service.EventsService;
+import ru.yandex.practicum.event.service.EventAdditionalService;
+import ru.yandex.practicum.event.service.EventsService;
 
 import java.time.LocalDateTime;
 import java.util.List;

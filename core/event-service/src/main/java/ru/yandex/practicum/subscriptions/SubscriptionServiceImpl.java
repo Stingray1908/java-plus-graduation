@@ -11,6 +11,8 @@ import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.event.service.EventAdditionalService;
+import ru.yandex.practicum.event.service.EventsServiceImpl;
 import ru.yandex.practicum.feigns.event.EventPrivateFeign;
 import ru.yandex.practicum.feigns.event.EventsAdminFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
@@ -28,9 +30,10 @@ import java.util.stream.Collectors;
 public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final UserAdminFeign userAdminFeign;
-    private final EventsAdminFeign eventsAdminFeign;
+    private final EventAdditionalService eventAdditionalService;
     private final RequestAdditionalFeign requestAdditionalFeign;
-    private final EventPrivateFeign eventPrivateFeign;
+    private final EventsServiceImpl eventsService;
+
 
     @Override
     public void subscribe(Long userId, Long publisherId) {
@@ -79,7 +82,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // эвент сервис
         // эвент репо
 
-        List<EventFullDto> events = eventPrivateFeign.findEventsBySubscriberIdAndStatusAndTimeAfter(
+        List<EventFullDto> events = eventsService.findActualPublishedEventsBySubscriberId(
                 userId,
                 EventState.PUBLISHED,
                 LocalDateTime.now(),
@@ -92,7 +95,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         //Map<Long, Long> confirmedRequests = getConfirmedRequests(ids);
 
-        return eventsAdminFeign.getEventShortDtoByIdsWithStats(ids);
+        return eventAdditionalService.getEventShortDtoByIdsWithStats(ids);
         /* events.stream()
                 .map(event -> EventsMapper.toShortEventDto(event, confirmedRequests.getOrDefault(event.getId(), 0L)))
                 .collect(Collectors.toList());*/
@@ -122,10 +125,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     private EventFullDto getEventById(Long id) {
-        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
-        if (event.getStatusCode().is2xxSuccessful()) {
-            throw new NotFoundException("Событие с ID " + id + " не найдено");
-        }
-        return event.getBody();
+        return eventAdditionalService.findEventById(id);
     }
 }

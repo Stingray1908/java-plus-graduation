@@ -1,4 +1,4 @@
-package ru.yandex.practicum.entity;
+package ru.yandex.practicum.event.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

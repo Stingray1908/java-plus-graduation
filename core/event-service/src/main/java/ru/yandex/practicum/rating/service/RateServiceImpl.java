@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.event.service.EventAdditionalService;
+import ru.yandex.practicum.event.service.EventsServiceImpl;
 import ru.yandex.practicum.rating.entity.Rate;
 import ru.yandex.practicum.rating.repo.RateRepository;
 import ru.yandex.practicum.dto.events.EventFullDto;
@@ -24,8 +26,8 @@ import java.util.List;
 public class RateServiceImpl implements RateService {
 
     private final RateRepository rateRepository;
-    private final EventsAdminFeign eventsAdminFeign;
     private final UserAdminFeign userAdminFeign;
+    private final EventAdditionalService eventAdditionalService;
 
     @Override
     public void addRate(Long userId, Long eventId, Boolean isLike) {
@@ -78,10 +80,7 @@ public class RateServiceImpl implements RateService {
     }
 
     private EventFullDto getEventById(Long id) {
-        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
-        if (event.getStatusCode().is2xxSuccessful()) {
-            throw new NotFoundException("Событие с ID " + id + " не найдено");
-        }
-        return event.getBody();
+        return eventAdditionalService.findEventById(id);
+
     }
 }

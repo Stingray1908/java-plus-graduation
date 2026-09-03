@@ -1,4 +1,4 @@
-package ru.yandex.practicum.controller;
+package ru.yandex.practicum.event.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -11,7 +11,7 @@ import ru.yandex.practicum.dto.events.NewEventDto;
 import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.feigns.event.EventPrivateFeign;
-import ru.yandex.practicum.service.EventsService;
+import ru.yandex.practicum.event.service.EventsService;
 
 import java.time.LocalDateTime;
 import java.util.List;

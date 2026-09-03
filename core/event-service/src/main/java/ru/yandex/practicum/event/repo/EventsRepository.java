@@ -1,11 +1,11 @@
-package ru.yandex.practicum.repo;
+package ru.yandex.practicum.event.repo;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.yandex.practicum.entity.Event;
+import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 
 import java.time.LocalDateTime;

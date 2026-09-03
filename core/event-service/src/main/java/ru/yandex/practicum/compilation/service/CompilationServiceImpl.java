@@ -10,6 +10,8 @@ import ru.yandex.practicum.compilation.entity.Compilation;
 import ru.yandex.practicum.compilation.mapper.CompilationMapper;
 import ru.yandex.practicum.compilation.repo.CompilationRepository;
 import ru.yandex.practicum.dto.ViewStats;
+import ru.yandex.practicum.event.repo.EventsRepository;
+import ru.yandex.practicum.event.service.EventAdditionalService;
 import ru.yandex.practicum.rating.repo.RateRepository;
 import ru.yandex.practicum.dto.compilation.CompilationDto;
 import ru.yandex.practicum.dto.compilation.NewCompilationDto;
@@ -32,18 +34,20 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final RequestAdditionalFeign requestAdditionalFeign;
-    private final EventsAdminFeign eventsAdminFeign;
+    private final EventAdditionalService eventAdditionalService;
+    private final EventsRepository eventsRepository;
     private final RateRepository rateRepository;
     private final StatsClient statsClient;
 
     public CompilationServiceImpl(CompilationRepository compilationRepository,
                                   RequestAdditionalFeign requestAdditionalFeign,
-                                  EventsAdminFeign eventsAdminFeign,
+                                  EventsAdminFeign eventsAdminFeign, EventAdditionalService eventAdditionalService, EventsRepository eventsRepository,
                                   RateRepository rateRepository,
                                   @Qualifier("StatsClientDiscovery") StatsClient statsClient) {
         this.compilationRepository = compilationRepository;
         this.requestAdditionalFeign = requestAdditionalFeign;
-        this.eventsAdminFeign = eventsAdminFeign;
+        this.eventAdditionalService = eventAdditionalService;
+        this.eventsRepository = eventsRepository;
         this.rateRepository = rateRepository;
         this.statsClient = statsClient;
     }
@@ -185,7 +189,7 @@ public class CompilationServiceImpl implements CompilationService {
         Map<Long, EventShortDto> eventDtoMap;
 
         if (!allEvents.isEmpty()) {
-            List<EventShortDto> shortDtos = eventsAdminFeign.getEventShortDtoByIdsWithStats(allEvents);
+            List<EventShortDto> shortDtos = eventAdditionalService.getEventShortDtoByIdsWithStats(allEvents);
             eventDtoMap = shortDtos.stream()
                     .collect(Collectors.toMap(EventShortDto::getId, dto -> dto));
         } else {

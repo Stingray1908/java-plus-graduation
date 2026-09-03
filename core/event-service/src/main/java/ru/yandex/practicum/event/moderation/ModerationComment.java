@@ -1,8 +1,8 @@
-package ru.yandex.practicum.moderation;
+package ru.yandex.practicum.event.moderation;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.yandex.practicum.entity.Event;
+import ru.yandex.practicum.event.entity.Event;
 
 
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.service;
+package ru.yandex.practicum.event.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -7,13 +7,13 @@ import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.yandex.practicum.entity.Event;
+import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
-import ru.yandex.practicum.mapper.EventsMapper;
-import ru.yandex.practicum.repo.EventsRepository;
+import ru.yandex.practicum.event.mapper.EventsMapper;
+import ru.yandex.practicum.event.repo.EventsRepository;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static ru.yandex.practicum.mapper.EventsMapper.toEventFullDto;
-import static ru.yandex.practicum.mapper.EventsMapper.toShortEventDto;
+import static ru.yandex.practicum.event.mapper.EventsMapper.toEventFullDto;
+import static ru.yandex.practicum.event.mapper.EventsMapper.toShortEventDto;
 
 @Slf4j
 

@@ -1,18 +1,17 @@
-package ru.yandex.practicum.mapper;
+package ru.yandex.practicum.event.mapper;
 
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.events.Location;
 import ru.yandex.practicum.dto.events.NewEventDto;
-import ru.yandex.practicum.entity.Event;
+import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.enums.EventState;
-import ru.yandex.practicum.moderation.ModerationComment;
+import ru.yandex.practicum.event.moderation.ModerationComment;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static ru.yandex.practicum.Constance.FORMATTER;
-import static ru.yandex.practicum.moderation.ModerationMapper.moderationCommentShortDto;
+import static ru.yandex.practicum.event.moderation.ModerationMapper.moderationCommentShortDto;
 
 public class EventsMapper {
 

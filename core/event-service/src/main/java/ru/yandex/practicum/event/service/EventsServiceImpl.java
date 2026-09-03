@@ -1,4 +1,4 @@
-package ru.yandex.practicum.service;
+package ru.yandex.practicum.event.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -18,7 +18,7 @@ import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
 import ru.yandex.practicum.dto.user.UserDto;
-import ru.yandex.practicum.entity.Event;
+import ru.yandex.practicum.event.entity.Event;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.enums.StateAction;
@@ -32,10 +32,10 @@ import ru.yandex.practicum.feigns.main.rate.RateAdditionalFeign;
 import ru.yandex.practicum.feigns.main.subscriptions.PrivateSubscriptionFeign;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
-import ru.yandex.practicum.mapper.EventsMapper;
-import ru.yandex.practicum.moderation.ModerationComment;
-import ru.yandex.practicum.moderation.ModerationCommentRepository;
-import ru.yandex.practicum.repo.EventsRepository;
+import ru.yandex.practicum.event.mapper.EventsMapper;
+import ru.yandex.practicum.event.moderation.ModerationComment;
+import ru.yandex.practicum.event.moderation.ModerationCommentRepository;
+import ru.yandex.practicum.event.repo.EventsRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.mapper.EventsMapper.*;
+import static ru.yandex.practicum.event.mapper.EventsMapper.*;
 
 @Service
 @Transactional
@@ -54,7 +54,6 @@ public class EventsServiceImpl implements EventsService {
     private static final int MIN_HOURS_BEFORE_EVENT = 2;
     private final PrivateSubscriptionFeign privateSubscriptionFeign;
     private final UserAdminFeign userAdminFeign;
-    private final EventsAdminFeign eventsAdminFeign;
     private final CategoryPublicFeign categoryPublicFeign;
     private final EventsRepository eventRepository;
     private final EventAdditionalService eventAdditionalService;
@@ -74,7 +73,6 @@ public class EventsServiceImpl implements EventsService {
                              ModerationCommentRepository moderationCommentRepository, RateAdditionalFeign rateAdditionalFeign) {
         this.privateSubscriptionFeign = privateSubscriptionFeign;
         this.userAdminFeign = userAdminFeign;
-        this.eventsAdminFeign = eventsAdminFeign;
         this.categoryPublicFeign = categoryPublicFeign;
         this.eventRepository = eventRepository;
         this.eventAdditionalService = eventAdditionalService;
@@ -529,11 +527,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private EventFullDto getEventById(Long id) {
-        ResponseEntity<EventFullDto> event = eventsAdminFeign.getEventById(id);
-        if (!event.getStatusCode().is2xxSuccessful()) {
-            throw new NotFoundException("событие не найдено");
-        }
-        return event.getBody();
+        return eventAdditionalService.findEventById(id);
     }
 
     @Override
