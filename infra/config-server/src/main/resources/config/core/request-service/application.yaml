@@ -13,7 +13,7 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/request_db
+    url: jdbc:postgresql://localhost:5436/request_db
     username: dbuser
     password: 12345
 
