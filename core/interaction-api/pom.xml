@@ -31,9 +31,18 @@
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
-            <!-- Чтобы работали @FeignClient, @PathVariable и т.д. -->
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-openfeign-core</artifactId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.github.openfeign.form</groupId>
+                    <artifactId>feign-form-spring</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.github.openfeign.form</groupId>
+                    <artifactId>feign-form</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
