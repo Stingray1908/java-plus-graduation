@@ -83,19 +83,44 @@ public class EventsServiceImpl implements EventsService {
     @Override
     public EventFullDto findEventById(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Comment not found"));
+                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+
         EventFullDto dto = toEventFullDto(event);
+
+        enrichFullEventDtoWithUserAndCategory(
+                dto,
+                event,
+                getUserMap(List.of(event)),
+                getCategoryMap(List.of(event))
+        );
 
         return dto;
     }
 
+
     @Override
     public List<EventFullDto> getEventsByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
         List<Event> events = eventRepository.findAllById(ids);
+        if (events.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, UserDto> userMap = getUserMap(events);
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
+
         return events.stream()
-                .map(EventsMapper::toEventFullDto)
+                .map(event -> {
+                    EventFullDto dto = EventsMapper.toEventFullDto(event);
+                    enrichFullEventDtoWithUserAndCategory(dto, event, userMap, categoryMap);
+                    return dto;
+                })
                 .toList();
     }
+
 
     @Override
     public List<EventShortDto> getEventShortDtoByIdsWithStats(List<Long> ids) {
@@ -132,16 +157,29 @@ public class EventsServiceImpl implements EventsService {
     @Override
     public EventFullDto saveEvent(NewEventDto newEventDto, Long userId) {
         validateEventDate(newEventDto.getEventDate());
+
+        // 1. Получаем зависимости (пользователь и категория)
         UserDto user = getUserById(userId);
         CategoryDto category = getCategoryById(newEventDto.getCategory());
 
         Event event = toEvent(newEventDto, userId, category.getId());
-        Event savedEvent = eventRepository.save(event);
-        savedEvent.setInitiatorId(userId);
-        savedEvent.setCategoryId(category.getId());
 
-        return toEventFullDto(savedEvent, 0L);
+        event.setInitiatorId(userId);
+        event.setCategoryId(category.getId());
+        Event savedEvent = eventRepository.save(event);
+
+        Map<Long, UserDto> userMap = Map.of(userId, user);
+        Map<Long, CategoryDto> categoryMap = Map.of(category.getId(), category);
+
+        EventFullDto dto = EventsMapper.toEventFullDto(savedEvent);
+        enrichFullEventDtoWithUserAndCategory(dto, savedEvent, userMap, categoryMap);
+
+         dto.setViews(0L);
+        dto.setRating(0L);
+
+        return dto;
     }
+
 
     @Override
     public List<EventShortDto> getPublishedEvents(
@@ -166,15 +204,8 @@ public class EventsServiceImpl implements EventsService {
         }
 
         List<Long> eventIds = events.stream().map(Event::getId).toList();
-  /*      // рефакторинг
-        Map<Long, Long> requestCounts = getConfirmedRequestsMap(eventIds);
-        Map<Long, Long> ratingsMap = getRatingsMap(events);
-*/
         List<EventShortDto> dtoList = getEventShortDtoByIdsWithStats(eventIds);
-        /*events.stream()
-                .map(event -> toShortEventDto(event, requestCounts.getOrDefault(event.getId(), 0L), ratingsMap.getOrDefault(event.getId(), 0L)))
-                .collect(Collectors.toList());
-*/
+
         if (sort == EventsSortType.VIEWS) {
             dtoList.sort((e1, e2) -> Long.compare(e2.getViews(), e1.getViews()));
         } else if (sort == EventsSortType.RATING) {
@@ -189,18 +220,34 @@ public class EventsServiceImpl implements EventsService {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
+        List<Event> eventsList = List.of(event);
+        Map<Long, UserDto> userMap = getUserMap(eventsList);
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(eventsList);
+
+        Map<Long, Long> viewsMap = getViewsMap(List.of(id));
+        Long views = viewsMap.getOrDefault(id, 0L);
+
+        Map<Long, Long> ratingsMap = getRatingsMap(List.of(id));
+        Long rating = ratingsMap.getOrDefault(id, 0L);
+
         List<Object[]> confirmedRequests = requestAdditionalFeign.countRequestsByEventIdsAndStatus(
-                List.of(event.getId()), EventState.CONFIRMED
+                List.of(id), EventState.CONFIRMED
         );
-        Long count = confirmedRequests.isEmpty() ? 0L : (Long) confirmedRequests.getFirst()[1];
+        Long confirmedRequestsCount = confirmedRequests.isEmpty()
+                ? 0L
+                : (Long) confirmedRequests.getFirst()[1];
 
-        event.setConfirmedRequests(count);
-        setViewsToEvents(List.of(event));
-        List<Object[]> rating = rateService.getRatingsForEvents(List.of(id));
-        Long ratingCount = rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
+        EventFullDto dto = EventsMapper.toEventFullDto(event);
 
-        return toEventFullDto(event, ratingCount);
+        enrichFullEventDtoWithUserAndCategory(dto, event, userMap, categoryMap);
+
+        dto.setViews(views);
+        dto.setRating(rating);
+        dto.setConfirmedRequests(confirmedRequestsCount);
+
+        return dto;
     }
+
 
     @Override
     public List<EventFullDto> getEvents(
@@ -218,8 +265,9 @@ public class EventsServiceImpl implements EventsService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        if (userIds != null && !userIds.isEmpty()) {
-            predicates.add(root.get("initiator").get("id").in(userIds));
+        if (userIds != null && !userIds.isEmpty()
+                && !(userIds.size() == 1 && userIds.get(0) == 0L)) {
+            predicates.add(root.get("initiatorId").in(userIds));
         }
 
         if (states != null && !states.isEmpty()) {
@@ -229,8 +277,9 @@ public class EventsServiceImpl implements EventsService {
             predicates.add(root.get("state").in(stateEnums));
         }
 
-        if (categoryIds != null && !categoryIds.isEmpty()) {
-            predicates.add(root.get("category").get("id").in(categoryIds));
+        if (categoryIds != null && !categoryIds.isEmpty()
+                && !(categoryIds.size() == 1 && categoryIds.get(0) == 0L)) {
+            predicates.add(root.get("categoryId").in(categoryIds));
         }
 
         if (rangeStart != null) {
@@ -248,17 +297,31 @@ public class EventsServiceImpl implements EventsService {
                 .setFirstResult((int) pageRequest.getOffset())
                 .setMaxResults(pageRequest.getPageSize())
                 .getResultList();
+
+        if (events.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<Long> ids = events.stream().map(Event::getId).toList();
         Map<Long, Long> confirmedRequests = getConfirmedRequestsMap(ids);
-
         Map<Long, Long> ratings = getRatingsMap(ids);
         setViewsToEvents(events);
 
+        Map<Long, UserDto> userMap = getUserMap(events);
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
+
         return events.stream()
-                .peek(event -> event.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L)))
-                .map(event -> toEventFullDto(event, ratings.getOrDefault(event.getId(), 0L)))
+                .peek(event -> event.setConfirmedRequests(
+                        confirmedRequests.getOrDefault(event.getId(), 0L)))
+                .map(event -> {
+                    EventFullDto dto = toEventFullDto(
+                            event, ratings.getOrDefault(event.getId(), 0L));
+                    enrichFullEventDtoWithUserAndCategory(dto, event, userMap, categoryMap);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request) {
@@ -306,7 +369,15 @@ public class EventsServiceImpl implements EventsService {
         setViewsToEvent(saved);
 
         Long rating = getRatingForEvents(List.of(saved.getId()));
-        return EventsMapper.toEventFullDto(saved, moderationComment, rating);
+        EventFullDto dto = EventsMapper.toEventFullDto(saved, moderationComment, rating);
+
+        enrichFullEventDtoWithUserAndCategory(
+                dto,
+                event,
+                getUserMap(List.of(saved)),
+                getCategoryMap(List.of(saved))
+        );
+        return dto;
     }
 
     @Override
@@ -367,8 +438,24 @@ public class EventsServiceImpl implements EventsService {
         Event updatedEvent = eventRepository.save(event);
         log.info("Событие с ID: {} успешно обновлено", eventId);
 
+        // 8. Получаем рейтинг
         Long rating = getRatingForEvents(List.of(updatedEvent.getId()));
-        return toEventFullDto(updatedEvent, rating);
+
+        // 9. Создаём DTO
+        EventFullDto dto = toEventFullDto(updatedEvent, rating);
+
+        // 10. ОБОГАЩАЕМ DTO: добавляем initiator и category как полноценные объекты
+        Map<Long, UserDto> userMap = getUserMap(List.of(updatedEvent));
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(List.of(updatedEvent));
+
+        enrichFullEventDtoWithUserAndCategory(
+                dto,
+                updatedEvent,
+                userMap,
+                categoryMap
+        );
+
+        return dto;
     }
 
     @Override
@@ -573,29 +660,36 @@ public class EventsServiceImpl implements EventsService {
 
         var pageable = PageRequest.of(from / size, size);
 
-        // 1. Получаем список ID авторов (publisher), на которых подписан subscriber
         List<Long> publishers = subscriptionRepository.findPublishersBySubscriber(subscriberId);
 
-        // Если подписок нет — сразу возвращаем пустой список, не дёргая БД
         if (publishers == null || publishers.isEmpty()) {
-            log.debug("У подписчика ID={} нет активных подписок, возвращаем пустой список событий", subscriberId);
+            log.debug("У подписчика ID={} нет активных подписок", subscriberId);
             return Collections.emptyList();
         }
 
-        // 2. Ищем события только от этих авторов
         List<Event> events = eventRepository.findEventsByPublisherIdsAndStatusAndTimeAfter(
-                publishers,
-                state,
-                now,
-                pageable
-        );
+                publishers, state, now, pageable);
+
+        if (events.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         log.debug("Найдено {} событий для подписчика ID={}", events.size(), subscriberId);
 
+        // Получаем карты зависимостей (только пользователь и категория)
+        Map<Long, UserDto> userMap = getUserMap(events);
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
+
         return events.stream()
-                .map(EventsMapper::toEventFullDto)
+                .map(event -> {
+                    EventFullDto dto = EventsMapper.toEventFullDto(event);
+                    enrichFullEventDtoWithUserAndCategory(dto, event, userMap, categoryMap);
+                    // Остальные поля (views, rating, confirmedRequests) остаются null/по умолчанию
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
+
 
 
     public Long getConfirmedRequests(List<Long> ids) {
@@ -706,6 +800,5 @@ public class EventsServiceImpl implements EventsService {
             dto.setCategory(category);
         }
     }
-
 
 }

@@ -31,7 +31,6 @@ public class RequestsServiceImpl implements RequestsService {
     private final EventsPublicFeign eventsAdminFeign;
 
     @Override
-    @SneakyThrows
     public EventRequestStatusUpdateResult updateRequestStatuses(
             Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
 
@@ -44,7 +43,7 @@ public class RequestsServiceImpl implements RequestsService {
 
         // 2. Проверяем условия пре‑модерации и лимита (400 BAD_REQUEST)
         if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
-            throw new BadRequestException("Request moderation is not required for this event");
+            throw new ForbiddenActionException("Request moderation is not required for this event");
         }
 
         // 3. Находим заявки для обновления

@@ -58,16 +58,18 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto createCompilation(NewCompilationDto dto) {
         log.info("Создание новой подборки: {}", dto.getTitle());
 
-        List<Long> events = new ArrayList<>();
+        List<EventShortDto> events = new ArrayList<>();
 
-        /*if (dto.getEvents() == null && dto.getEvents().isEmpty()) {
-            //events = eventsAdminFeign.getEventsByIds(dto.getEvents());
-        }*/
+        if (dto.getEvents() != null && !dto.getEvents().isEmpty()) {
+            events = eventsService.getEventShortDtoByIdsWithStats(dto.getEvents());
+        }
 
-        Compilation compilation = CompilationMapper.toCompilation(dto, events);
+        Compilation compilation = CompilationMapper.toCompilation(dto, dto.getEvents());
         Compilation saved = compilationRepository.save(compilation);
 
-        return mapToDtoWithStats(saved);
+        CompilationDto comp = mapToDtoWithStats(saved);
+        comp.setEvents(events);
+        return comp;
     }
 
     /**

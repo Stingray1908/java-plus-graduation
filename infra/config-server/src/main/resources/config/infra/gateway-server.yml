@@ -229,7 +229,7 @@ spring:
                   maxBackoff: 500ms
 
         - id: REQUEST-ADDITIONAL-reader
-          uri: lb://event-service
+          uri: lb://request-service
           predicates:
             - Path=/users/requests/**
           filters:
@@ -313,7 +313,7 @@ spring:
             - Path=/users/events/rate/**
 
         - id: REQUEST-ADDITIONAL
-          uri: lb://event-service
+          uri: lb://request-service
           predicates:
             - Path=/users/requests/**
 

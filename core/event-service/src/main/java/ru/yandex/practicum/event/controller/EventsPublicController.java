@@ -88,7 +88,7 @@ public class EventsPublicController implements EventsPublicFeign {
         return ResponseEntity.ok(events);
     }
 
-    @GetMapping("/{id}/inside")
+    @Override
     public ResponseEntity<EventFullDto> getEventByIdInside(
             @PathVariable Long id) {
 

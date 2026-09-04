@@ -49,7 +49,7 @@ public class ParticipationsRequestsService {
         }
 
         // 4. Проверяем статус события — должно быть PUBLISHED
-        if (!event.getState().equals(EventState.PUBLISHED)) {
+        if (!EventState.valueOf(event.getState()).equals(EventState.PUBLISHED)) {
             throw new ConflictException("Cannot participate in unpublished event");
         }
 
