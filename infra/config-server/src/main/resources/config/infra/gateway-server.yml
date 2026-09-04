@@ -228,6 +228,24 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
+        - id: REQUEST-ADDITIONAL-reader
+          uri: lb://event-service
+          predicates:
+            - Path=/users/requests/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
         - id: COMMENT-ADMIN
           uri: lb://comment-service
           predicates:
