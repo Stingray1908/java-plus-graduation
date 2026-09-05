@@ -49,7 +49,7 @@ spring:
         - id: COMMENT-PRIVATE-Reader
           uri: lb://comment-service
           predicates:
-            - Path=Path=/users/{userId}/events/{eventId}/comments/**
+            - Path=/users/{userId}/events/{eventId}/comments/**
           filters:
             - name: Retry
               args:
@@ -254,7 +254,7 @@ spring:
         - id: COMMENT-PRIVATE
           uri: lb://comment-service
           predicates:
-            - Path=Path=/users/{userId}/events/{eventId}/comments/**
+            - Path=/users/{userId}/events/{eventId}/comments/**
 
         - id: EVENT-ADMIN
           uri: lb://event-service
@@ -274,7 +274,7 @@ spring:
         - id: REQUEST-PRIVATE
           uri: lb://request-service
           predicates:
-            - Path=Path=/users/{userId}/requests/**
+            - Path=/users/{userId}/requests/**
 
         - id: REQUEST-PARTICIPATION
           uri: lb://request-service
