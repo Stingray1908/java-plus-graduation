@@ -1,18 +1,18 @@
 package ru.yandex.practicum.mapper;
 
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.dto.comments.CommentDto;
-import ru.yandex.practicum.enums.CommentStatus;
 import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.entity.Comment;
+import ru.yandex.practicum.enums.CommentStatus;
 
 import java.time.LocalDateTime;
 
-@Component
+@UtilityClass
 public class CommentMapper {
 
     public static CommentDto toCommentDto(Comment comment, String author) {
-        if (comment == null || author.isEmpty()) return null;
+        if (comment == null || author == null) return null;
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())

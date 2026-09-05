@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
@@ -30,7 +31,7 @@ public class RateServiceImpl implements RateService {
     public void addRate(Long userId, Long eventId, Boolean isLike) {
         log.info("Пользователь ID={} ставит {} событию ID={}", userId, isLike ? "ЛАЙК" : "ДИЗЛАЙК", eventId);
 
-        UserDto user = getUserById(userId);
+        UserShortDto user = getUserById(userId);
         Event event = getEventById(eventId);
 
         if (!event.getState().equals(EventState.PUBLISHED)) {
@@ -70,8 +71,8 @@ public class RateServiceImpl implements RateService {
         return rateRepository.getRatingsForEvents(eventIds);
     }
 
-    private UserDto getUserById(Long id) {
-        UserDto user = userAdminFeign.getById(id);
+    private UserShortDto getUserById(Long id) {
+        UserShortDto user = userAdminFeign.getById(id);
         if (user == null) throw new NotFoundException("Пользователь с ID " + id + " не найден");
         return user;
     }

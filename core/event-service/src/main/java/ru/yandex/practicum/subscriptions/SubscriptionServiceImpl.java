@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
-import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.error.exception.NotFoundException;
@@ -17,6 +17,7 @@ import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,8 +39,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new ConflictException("User cannot subscribe to himself");
         }
 
-        UserDto subscriber = getUserById(userId);
-        UserDto publisher = getUserById(publisherId);
+        getUserMapForEvents(List.of(userId, publisherId));
 
         if (subscriptionRepository.existsBySubscriber_IdAndPublisher_Id(userId, publisherId)) {
             throw new ConflictException("User with id=" + userId + " is already subscribed to user with id=" + publisherId);
@@ -71,29 +71,18 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         log.info("Получение актуальных событий пользователя с ID {}, from: {}, size: {}", userId, from, size);
 
         getUserById(userId);
-        //вызывался из репо
-        // пишем запрос в Феигн
-        // Эвент феигн
-        // эвент сервис
-        // эвент репо
 
         List<EventFullDto> events = eventsService.findActualPublishedEventsBySubscriberId(
                 userId,
                 EventState.PUBLISHED,
                 LocalDateTime.now(),
-                //PageRequest.of(from / size, size)
                 from,
                 size
         );
 
         List<Long> ids = events.stream().map(EventFullDto::getId).toList();
 
-        //Map<Long, Long> confirmedRequests = getConfirmedRequests(ids);
-
         return eventsService.getEventShortDtoByIdsWithStats(ids);
-        /* events.stream()
-                .map(event -> EventsMapper.toShortEventDto(event, confirmedRequests.getOrDefault(event.getId(), 0L)))
-                .collect(Collectors.toList());*/
     }
 
     @Override
@@ -113,10 +102,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 ));
     }
 
-    private UserDto getUserById(Long id) {
-        UserDto user = userAdminFeign.getById(id);
+    private UserShortDto getUserById(Long id) {
+        UserShortDto user = userAdminFeign.getById(id);
         if (user == null) throw new NotFoundException("Пользователь с ID " + id + " не найден");
         return user;
+    }
+
+    private Map<Long, UserShortDto> getUserMapForEvents(List<Long> ids) {
+        if (ids.isEmpty()) return Map.of();
+        return userAdminFeign.getAllInIds(ids).stream()
+                .collect(Collectors.toMap(UserShortDto::getId, Function.identity()));
     }
 
     private EventFullDto getEventById(Long id) {

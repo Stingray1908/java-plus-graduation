@@ -3,6 +3,7 @@ package ru.yandex.practicum.service;
 import org.springframework.dao.DataIntegrityViolationException;
 import ru.yandex.practicum.dto.user.NewUserRequest;
 import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.error.exception.NotFoundException;
 
 import java.util.List;
@@ -50,7 +51,7 @@ public interface UserService {
      */
     void deleteById(Long id);
 
-    List<UserDto> getAllInIds (List<Long> ids);
+    List<UserShortDto> getAllInIds (List<Long> ids);
 
-    UserDto getById (Long userId);
+    UserShortDto getById (Long userId);
 }

@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.request.ParticipationRequestDto;
-import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.entity.ParticipationRequest;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.error.exception.ConflictException;
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.Constance.FORMATTER;
+import static ru.yandex.practicum.Constants.FORMATTER;
 import static ru.yandex.practicum.mapper.RequestsMapper.toDto;
 
 
@@ -38,7 +38,7 @@ public class ParticipationsRequestsService {
     public ParticipationRequestDto createParticipationRequest(Long userId, Long eventId) {
 
         // 1. Проверяем существование пользователя
-        UserDto requester = getUserById(userId);
+        UserShortDto requester = getUserById(userId);
 
         // 2. Проверяем существование события
         EventFullDto event = getEventById(eventId);
@@ -128,7 +128,7 @@ public class ParticipationsRequestsService {
 
     public List<ParticipationRequestDto> getUserParticipationRequests(Long userId) {
         // 1. Проверяем существование пользователя
-        UserDto user = getUserById(userId);
+        UserShortDto user = getUserById(userId);
 
         // 2. Получаем все заявки пользователя
         List<ParticipationRequest> requests = requestRepository.findByRequesterId(userId);
@@ -139,8 +139,8 @@ public class ParticipationsRequestsService {
                 .collect(Collectors.toList());
     }
 
-    private UserDto getUserById(Long id) {
-        UserDto user = userAdminFeign.getById(id);
+    private UserShortDto getUserById(Long id) {
+        UserShortDto user = userAdminFeign.getById(id);
         if (user == null) {
             throw new NotFoundException("пользователь не найден");
         }

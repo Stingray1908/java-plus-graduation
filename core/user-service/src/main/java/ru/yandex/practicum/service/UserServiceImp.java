@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.error.exception.ConflictException;
 import ru.yandex.practicum.dto.user.NewUserRequest;
 import ru.yandex.practicum.dto.user.UserDto;
-import ru.yandex.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.entity.User;
+import ru.yandex.practicum.error.exception.ConflictException;
+import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.mapper.UserMapper;
 import ru.yandex.practicum.repo.UserRepository;
 
@@ -71,15 +72,15 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public List<UserDto> getAllInIds(List<Long> ids) {
+    public List<UserShortDto> getAllInIds(List<Long> ids) {
         return userRepository.findByIds(ids).stream()
-                .map(userMapper::toDto)
+                .map(userMapper::toShortDto)
                 .toList();
     }
 
     @Override
-    public UserDto getById(Long userId) {
-        return userMapper.toDto(userRepository.findById(userId)
+    public UserShortDto getById(Long userId) {
+        return userMapper.toShortDto(userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден")));
     }
 }

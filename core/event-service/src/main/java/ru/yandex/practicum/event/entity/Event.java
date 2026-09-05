@@ -23,11 +23,6 @@ public class Event {
     @Column(nullable = false, length = 2000)
     private String annotation;
 
-    /*
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-     */
     @Column(nullable = false)
     Long categoryId;
 
@@ -43,11 +38,6 @@ public class Event {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
-    /*
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "initiator_id", nullable = false)
-    private User initiator;
-*/
     @Column(nullable = false)
     Long initiatorId;
 
@@ -78,12 +68,5 @@ public class Event {
 
     @Column(nullable = false)
     private Long views = 0L;
-
-    // В коде ни одного упоминнания о комментарии, да и знать событию о них не нужно
-    // Разделение ответсвтенности
-
-    //@ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "comment_id")
-    //private Comment comments;
 
 }

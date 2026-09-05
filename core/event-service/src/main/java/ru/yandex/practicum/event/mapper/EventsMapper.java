@@ -1,31 +1,31 @@
 package ru.yandex.practicum.event.mapper;
 
 import lombok.AllArgsConstructor;
-import ru.yandex.practicum.categories.repo.CategoryRepository;
+import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.dto.events.Location;
 import ru.yandex.practicum.dto.events.NewEventDto;
-import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.events.moderation.ModerationCommentShortDto;
 import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.event.entity.Event;
-import ru.yandex.practicum.event.moderation.ModerationComment;
-import ru.yandex.practicum.feigns.user.UserAdminFeign;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
-import static ru.yandex.practicum.Constance.FORMATTER;
-import static ru.yandex.practicum.categories.mapper.CategoryMapper.toCategoryDto;
-import static ru.yandex.practicum.event.moderation.ModerationMapper.moderationCommentShortDto;
+import static ru.yandex.practicum.Constants.FORMATTER;
 
 @AllArgsConstructor
 public class EventsMapper {
 
-
-
-    public static EventShortDto toShortEventDto(Event event, Long confirmedRequests) {
-        //UserDto user = userAdminFeign.getById(event.getInitiatorId());
+    public static EventShortDto toShortEventDto(Event event,
+                                                Long confirmedRequests,
+                                                UserShortDto user,
+                                                CategoryDto category,
+                                                Long rating,
+                                                Long views) {
         EventShortDto dto = new EventShortDto();
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
@@ -33,63 +33,77 @@ public class EventsMapper {
         dto.setEventDate(event.getEventDate().format(FORMATTER));
         dto.setPaid(event.getPaid());
         dto.setTitle(event.getTitle());
-        //dto.setCategory(toCategoryDto(categoryRepository.getReferenceById(event.getId())));
-        //dto.setInitiator(new UserShortDto(user.getId(), user.getName()));
-
-
-        return dto;
-    }
-
-    public static EventShortDto toShortEventDto(Event event, Long confirmedRequests, Long rating, Long views) {
-        EventShortDto dto = toShortEventDto(event, confirmedRequests);
+        dto.setInitiator(user);
+        dto.setCategory(category);
         dto.setRating(rating != null ? rating : 0L);
         dto.setViews(views != null ? views : 0L);
         return dto;
     }
 
-    public static EventFullDto toEventFullDto(Event event, Long rating) {
-        EventFullDto dto = toEventFullDto(event);
-        dto.setRating(rating != null ? rating : 0L);
-        return dto;
+    public static List<EventShortDto> toListShortEventDtos(List<Event> events,
+                                                           Map<Long, Long> confirmedRequests,
+                                                           Map<Long, UserShortDto> userMap,
+                                                           Map<Long, CategoryDto> categoryMap,
+                                                           Map<Long, Long> ratings,
+                                                           Map<Long, Long> views) {
+        return events.stream()
+                .map(e -> toShortEventDto(e,
+                        confirmedRequests.getOrDefault(e.getId(), 0L),
+                        userMap.get(e.getInitiatorId()),
+                        categoryMap.get(e.getCategoryId()),
+                        ratings.getOrDefault(e.getId(), 0L),
+                        views.getOrDefault(e.getId(), 0L)))
+                .toList();
     }
 
-    public static EventFullDto toEventFullDto(Event event) {
+    public static EventFullDto toEventFullDto(Event event,
+                                              UserShortDto user,
+                                              CategoryDto category,
+                                              ModerationCommentShortDto commentShortDto,
+                                              Long confirmedRequests,
+                                              Long rating,
+                                              Long views) {
+        Location location = new Location(event.getLocationLat(), event.getLocationLon());
+
         EventFullDto dto = new EventFullDto();
-        //UserDto user = userAdminFeign.getById(event.getInitiatorId());
         dto.setId(event.getId());
+        dto.setInitiator(user);
+        dto.setCategory(category);
+        dto.setLastModerationCommentDto(commentShortDto);
         dto.setAnnotation(event.getAnnotation());
-        //dto.setCategory(toCategoryDto(categoryRepository.getReferenceById(event.getCategoryId())));
-        dto.setConfirmedRequests(event.getConfirmedRequests());
+        dto.setConfirmedRequests(confirmedRequests);
         dto.setCreatedOn(format(event.getCreatedOn()));
         dto.setDescription(event.getDescription());
         dto.setEventDate(event.getEventDate().format(FORMATTER));
-        //dto.setInitiator(new UserShortDto(user.getId(), user.getName()));
-        dto.setLocation(new Location(event.getLocationLat(), event.getLocationLon()));
+        dto.setLocation(location);
         dto.setPaid(event.getPaid());
         dto.setParticipantLimit(event.getParticipantLimit());
         dto.setPublishedOn(event.getPublishedOn() != null ? format(event.getPublishedOn()) : null);
         dto.setRequestModeration(event.getRequestModeration());
         dto.setState(event.getState().name());
         dto.setTitle(event.getTitle());
-        dto.setViews(event.getViews());
-        return dto;
-    }
-
-    public static EventFullDto toEventFullDto(Event event, ModerationComment mc, Long rating) {
-        EventFullDto dto = toEventFullDto(event);
         dto.setRating(rating != null ? rating : 0L);
-        if (mc != null) {
-            dto.setLastModerationCommentDto(moderationCommentShortDto(mc));
-        }
+        dto.setViews(views != null ? views : 0L);
+
         return dto;
     }
 
-    public static EventFullDto toEventFullDto(Event event, ModerationComment mc) {
-        EventFullDto dto = toEventFullDto(event);
-        if (mc != null) {
-            dto.setLastModerationCommentDto(moderationCommentShortDto(mc));
-        }
-        return dto;
+    public static List<EventFullDto> toListEventFullDtos(List<Event> events,
+                                                         Map<Long, UserShortDto> userMap,
+                                                         Map<Long, CategoryDto> categoryMap,
+                                                         Map<Long, ModerationCommentShortDto> commentMap,
+                                                         Map<Long, Long> confirmedRequestsMap,
+                                                         Map<Long, Long> ratings,
+                                                         Map<Long, Long> views) {
+        return events.stream()
+                .map(e -> toEventFullDto(e,
+                        userMap.getOrDefault(e.getInitiatorId(), null),
+                        categoryMap.getOrDefault(e.getCategoryId(), null),
+                        commentMap.getOrDefault(e.getId(), null),
+                        confirmedRequestsMap.getOrDefault(e.getId(), 0L),
+                        ratings.getOrDefault(e.getId(), 0L),
+                        views.getOrDefault(e.getId(), 0L)))
+                .toList();
     }
 
     /**

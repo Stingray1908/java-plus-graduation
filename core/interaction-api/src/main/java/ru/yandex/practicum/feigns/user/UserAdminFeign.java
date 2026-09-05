@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.user.NewUserRequest;
 import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 
 import java.util.List;
 
@@ -16,9 +17,9 @@ public interface UserAdminFeign {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("{userId}")
-    public UserDto getById(@PathVariable @Positive Long userId);
+    public UserShortDto getById(@PathVariable @Positive Long userId);
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("inIds")
-    List<UserDto> getAllInIds(@RequestParam List<Long> ids);
+    List<UserShortDto> getAllInIds(@RequestParam List<Long> ids);
 }

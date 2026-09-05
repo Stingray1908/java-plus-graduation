@@ -120,9 +120,6 @@ public class GlobalExceptionHandler {
                 "CONFLICT",
                 "Integrity constraint has been violated.",
                 rootCauseMessage,
-                //"constraint [uq_email]",
-                //до конца не ясно какой сценарий,
-                // пока пусть будет фиксированное значение при любом конфликте в БД
                 LocalDateTime.now()
         );
     }

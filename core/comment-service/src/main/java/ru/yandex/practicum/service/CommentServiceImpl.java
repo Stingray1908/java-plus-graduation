@@ -11,11 +11,10 @@ import ru.yandex.practicum.dto.comments.NewCommentDto;
 import ru.yandex.practicum.dto.comments.UpdateCommentByAuthorRequest;
 import ru.yandex.practicum.dto.comments.UpdateCommentByModeratorRequest;
 import ru.yandex.practicum.dto.events.EventFullDto;
-import ru.yandex.practicum.dto.user.UserDto;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.entity.Comment;
 import ru.yandex.practicum.enums.CommentStatus;
 import ru.yandex.practicum.error.exception.NotFoundException;
-
 import ru.yandex.practicum.feigns.event.EventsPublicFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.mapper.CommentMapper;
@@ -42,7 +41,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto addComment(Long userId, Long eventId, NewCommentDto dto) {
 
-        UserDto user = getUserById(userId);
+        UserShortDto user = getUserById(userId);
         getEventById(eventId);
 
         Comment comment = CommentMapper.toComment(dto, eventId, userId);
@@ -57,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment not found"));
 
-        UserDto user = getUserById(comment.getAuthorId());
+        UserShortDto user = getUserById(comment.getAuthorId());
         return CommentMapper.toCommentDto(comment, user.getName());
     }
 
@@ -76,10 +75,10 @@ public class CommentServiceImpl implements CommentService {
                 .map(Comment::getAuthorId)
                 .toList();
 
-        List<UserDto> users = userAdminFeign.getAllInIds(userIds);
+        List<UserShortDto> users = userAdminFeign.getAllInIds(userIds);
 
         Map<Long, String> authorNameMap = users.stream()
-                .collect(Collectors.toMap(UserDto::getId, UserDto::getName));
+                .collect(Collectors.toMap(UserShortDto::getId, UserShortDto::getName));
 
         return comments.stream()
                 .map(comment -> {
@@ -107,7 +106,7 @@ public class CommentServiceImpl implements CommentService {
         }
         comment.setUpdatedOn(LocalDateTime.now());
 
-        UserDto user = getUserById(commentId);
+        UserShortDto user = getUserById(commentId);
         return CommentMapper.toCommentDto(commentRepository.save(comment), user.getName());
     }
 
@@ -126,7 +125,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("Comment {} updated by moderator {}: status={}, text={}",
                 saved.getId(), userId, saved.getStatus(), saved.getText());
 
-        UserDto user = getUserById(commentId);
+        UserShortDto user = getUserById(commentId);
         return CommentMapper.toCommentDto(saved, user.getName());
     }
 
@@ -154,8 +153,8 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.deleteById(commentId);
     }
 
-    private UserDto getUserById(Long id) {
-        UserDto user = userAdminFeign.getById(id);
+    private UserShortDto getUserById(Long id) {
+        UserShortDto user = userAdminFeign.getById(id);
         if (user == null) {
             throw new NotFoundException("пользователь не найден");
         }

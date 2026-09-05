@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.service.UserService;
@@ -101,14 +102,14 @@ public class UserAdminController implements UserAdminFeign {
     }
 
     @Override
-    public UserDto getById(@PathVariable @Positive Long userId) {
-        UserDto userDto = userService.getById(userId);
+    public UserShortDto getById(@PathVariable @Positive Long userId) {
+        UserShortDto userDto = userService.getById(userId);
         return userDto;
     }
 
     @Override
-    public List<UserDto> getAllInIds(@RequestParam List<Long> ids) {
-        List<UserDto> userDtos = userService.getAllInIds(ids);
+    public List<UserShortDto> getAllInIds(@RequestParam List<Long> ids) {
+        List<UserShortDto> userDtos = userService.getAllInIds(ids);
         return userDtos;
     }
 }
