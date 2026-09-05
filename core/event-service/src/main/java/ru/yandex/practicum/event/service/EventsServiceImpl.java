@@ -318,8 +318,8 @@ public class EventsServiceImpl implements EventsService {
         }
 
         applyNonNullUpdates(event, request);
-
         eventRepository.save(event);
+
         return toEventFullDto(event,
                 getUserById(event.getInitiatorId()),
                 categoryService.getCategoryById(event.getCategoryId()),

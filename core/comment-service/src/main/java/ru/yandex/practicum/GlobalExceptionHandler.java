@@ -105,7 +105,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT); // 409 Conflict
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
     /**
