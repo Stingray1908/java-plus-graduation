@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.error.exception.ConflictException;
-import ru.practicum.error.exception.NotFoundException;
+import ru.yandex.practicum.error.exception.ConflictException;
+import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.practicum.rating.controller.PrivateRateController;
 import ru.practicum.rating.service.RateService;
 

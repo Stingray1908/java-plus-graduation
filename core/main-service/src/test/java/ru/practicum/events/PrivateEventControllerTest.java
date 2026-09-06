@@ -14,11 +14,16 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
-import ru.practicum.categories.Category;
-import ru.practicum.categories.CategoryRepository;
-import ru.practicum.events.dto.UpdateEventUserRequest;
+import ru.practicum.categories.entity.Category;
+import ru.practicum.categories.repo.CategoryRepository;
+import ru.yandex.practicum.dto.events.Location;
+import ru.yandex.practicum.dto.events.UpdateEventUserRequest;
+import ru.practicum.events.entity.Event;
+import ru.practicum.events.repo.EventsRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
+import ru.yandex.practicum.enums.EventState;
+import ru.yandex.practicum.enums.StateAction;
 
 import java.time.LocalDateTime;
 

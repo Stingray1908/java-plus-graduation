@@ -77,7 +77,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.practicum.StatsServiceApp</mainClass>
+                    <mainClass>ru.yandex.practicum.StatsServiceApp</mainClass>
                 </configuration>
             </plugin>
         </plugins>

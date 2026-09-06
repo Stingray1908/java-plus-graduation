@@ -27,10 +27,11 @@ spring:
           enabled: false
 
       routes:
-        - id: MAIN-ADMIN-Reader
-          uri: lb://main-service
+
+        - id: COMMENT-ADMIN-Reader
+          uri: lb://comment-service
           predicates:
-            - Path=/admin/**
+            - Path=/admin/comments/**
           filters:
             - name: Retry
               args:
@@ -45,8 +46,46 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-EVENTS-Reader
-          uri: lb://main-service
+        - id: COMMENT-PRIVATE-Reader
+          uri: lb://comment-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/comments/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: EVENT-ADMIN-Reader
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+
+
+        - id: EVENT-PUBLIC-Reader
+          uri: lb://event-service
           predicates:
             - Path=/events/**
           filters:
@@ -63,8 +102,62 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-CATEGORIES-Reader
-          uri: lb://main-service
+        - id: REQUEST-PRIVATE-Reader
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/requests/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: REQUEST-PARTICIPATION-Reader
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/requests/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: USER-ADMIN-Reader
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: MAIN-CATEGORIES-PUBLIC-Reader
+          uri: lb://event-service
           predicates:
             - Path=/categories/**
           filters:
@@ -81,8 +174,8 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-COMPILATIONS-Reader
-          uri: lb://main-service
+        - id: MAIN-COMPILATIONS-PUBLIC-Reader
+          uri: lb://event-service
           predicates:
             - Path=/compilations/**
           filters:
@@ -99,10 +192,10 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-USERS-Reader
-          uri: lb://main-service
+        - id: MAIN-SUBSCRIPTION-PRIVATE-Reader
+          uri: lb://event-service
           predicates:
-            - Path=/users/**
+            - Path=/users/{userId}/subscriptions/**
           filters:
             - name: Retry
               args:
@@ -117,27 +210,114 @@ spring:
                   firstBackoff: 100ms
                   maxBackoff: 500ms
 
-        - id: MAIN-ADMIN
-          uri: lb://main-service
+        - id: EVENT-PRIVATE-Reader
+          uri: lb://event-service
           predicates:
-            - Path=/admin/**
+            - Path=/users/{userId}/events/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
 
-        - id: MAIN-EVENTS
-          uri: lb://main-service
+        - id: REQUEST-ADDITIONAL-reader
+          uri: lb://request-service
+          predicates:
+            - Path=/users/requests/**
+          filters:
+            - name: Retry
+              args:
+                retries: 2
+                statuses:
+                  - BAD_GATEWAY
+                  - SERVICE_UNAVAILABLE
+                  - GATEWAY_TIMEOUT
+                methods:
+                  - GET
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 500ms
+
+        - id: COMMENT-ADMIN
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/comments/**
+
+        - id: COMMENT-PRIVATE
+          uri: lb://comment-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/comments/**
+
+        - id: EVENT-ADMIN
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**
+
+        - id: EVENT-PRIVATE
+          uri: lb://event-service
+          predicates:
+            - Path=/users/{userId}/events/**
+
+        - id: EVENT-PUBLIC
+          uri: lb://event-service
           predicates:
             - Path=/events/**
 
-        - id: MAIN-CATEGORIES
-          uri: lb://main-service
+        - id: REQUEST-PRIVATE
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/requests/**
+
+        - id: REQUEST-PARTICIPATION
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/requests/**
+
+        - id: USER-ADMIN
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users/**
+
+
+        - id: MAIN-CATEGORIES-ADMIN
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/categories/**
+
+        - id: MAIN-COMPILATIONS-ADMIN
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/compilations/**
+
+        - id: MAIN-PRIVATE-SUBSCRIPTIONS
+          uri: lb://event-service
+          predicates:
+            - Path=/users/{userId}/subscriptions/**
+
+        - id: MAIN-RATE-PRIVATE
+          uri: lb://event-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/rate/**
+
+        - id: MAIN-RATE-ADDITIONAL
+          uri: lb://event-service
+          predicates:
+            - Path=/users/events/rate/**
+
+        - id: REQUEST-ADDITIONAL
+          uri: lb://request-service
+          predicates:
+            - Path=/users/requests/**
+
+        - id: categories-ADDITIONAL
+          uri: lb://event-service
           predicates:
             - Path=/categories/**
-
-        - id: MAIN-COMPILATIONS
-          uri: lb://main-service
-          predicates:
-            - Path=/compilations/**
-
-        - id: MAIN-USERS
-          uri: lb://main-service
-          predicates:
-            - Path=/users/**

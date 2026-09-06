@@ -8,7 +8,6 @@
     </parent>
 
     <modules>
-        <module>main-dto</module>
         <module>main-client</module>
     </modules>
 
