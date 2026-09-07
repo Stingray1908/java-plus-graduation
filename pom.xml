@@ -16,6 +16,10 @@
         <module>ewm-main-service</module>
         <module>infra</module>
         <module>core</module>
+        <module>ewm-stats-service/aggregator</module>
+        <module>ewm-stats-service/analyzer</module>
+        <module>ewm-stats-service/collector</module>
+        <module>ewm-stats-service/serialization</module>
     </modules>
 
     <groupId>ru.yandex.practicum</groupId>
