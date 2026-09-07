@@ -20,6 +20,8 @@
         <module>ewm-stats-service/analyzer</module>
         <module>ewm-stats-service/collector</module>
         <module>ewm-stats-service/serialization</module>
+        <module>ewm-stats-service/serialization/avro-schemas</module>
+        <module>ewm-stats-service/serialization/proto-schemas</module>
     </modules>
 
     <groupId>ru.yandex.practicum</groupId>
