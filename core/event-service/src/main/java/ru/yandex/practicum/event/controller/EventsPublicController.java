@@ -20,6 +20,8 @@ import stats.service.collector.UserActionProtoOuterClass;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 
 @RestController
 @RequestMapping("/events")
@@ -85,7 +87,9 @@ public class EventsPublicController implements EventsPublicFeign {
                 .build();
         statsClient.hit(hit);
 
-        collectorClient.sendUserAction(10L,10L, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW, Instant.now());
+        Random random = new Random();
+        long i = random.nextLong(1000);
+        collectorClient.sendUserAction(i, i, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW, Instant.now());
 
         List<EventShortDto> events = eventService.getPublishedEvents(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable,

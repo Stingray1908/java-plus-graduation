@@ -39,3 +39,8 @@ docker run -d --name userServ -e POSTGRES_DB=user_db -e POSTGRES_USER=dbuser -e 
 
 
 - удалить все модули статистики кроме клиента
+
+
+
+Запустил ДИСКАВЕРИ конфиг, ворота, БАЗЫ, стат, евент, коллектор
+шлю

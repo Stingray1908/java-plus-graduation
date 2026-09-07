@@ -1,6 +1,12 @@
 server:
   port: 0
 
+grpc:
+  client:
+    grpcCollector:
+      address: discovery:///collector
+      negotiation-type: plaintext
+
 spring:
   jpa:
     hibernate:
