@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.CollectorClient;
 import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.dto.EndpointHit;
 import ru.yandex.practicum.dto.events.EventFullDto;
@@ -14,7 +15,9 @@ import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.event.service.EventsService;
 import ru.yandex.practicum.feigns.event.EventsPublicFeign;
+import stats.service.collector.UserActionProtoOuterClass;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,16 +27,18 @@ public class EventsPublicController implements EventsPublicFeign {
 
     private final EventsService eventService;
     private final StatsClient statsClient;
+    private final CollectorClient collectorClient;
 
     @Value("${spring.application.name}")
     private String appName;
 
     public EventsPublicController(
             EventsService eventService,
-            @Qualifier("StatsClientDiscovery") StatsClient statsClient
+            @Qualifier("StatsClientDiscovery") StatsClient statsClient, CollectorClient collectorClient
     ) {
         this.eventService = eventService;
         this.statsClient = statsClient;
+        this.collectorClient = collectorClient;
     }
 
     @GetMapping
@@ -79,6 +84,8 @@ public class EventsPublicController implements EventsPublicFeign {
                 .timestamp(LocalDateTime.now())
                 .build();
         statsClient.hit(hit);
+
+        collectorClient.sendUserAction(10L,10L, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW, Instant.now());
 
         List<EventShortDto> events = eventService.getPublishedEvents(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable,

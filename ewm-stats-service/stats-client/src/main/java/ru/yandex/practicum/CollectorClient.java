@@ -28,7 +28,7 @@ public class CollectorClient {
                 .setTimestamp(Timestamp.newBuilder()
                         .setSeconds(timestamp.getEpochSecond())
                         .setNanos(timestamp.getNano())
-                        .build()) 
+                        .build())
                 .build();
 
         Empty response = blockingStub.collectUserAction(request);
