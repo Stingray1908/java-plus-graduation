@@ -1,6 +1,6 @@
 spring:
   application:
-    name: comment-service
+    name: collector
   config:
     import: "optional:configserver:"
   cloud:

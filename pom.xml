@@ -32,6 +32,7 @@
         <spring-cloud-dependencies.version>2023.0.3</spring-cloud-dependencies.version>
 
         <!--        grpc        -->
+        <schema.version>0.0.1-SNAPSHOT</schema.version>
         <avro.version>1.11.3</avro.version>
         <kafka-clients.version>3.6.1</kafka-clients.version>
         <springdoc-openapi-starter.version>2.6.0</springdoc-openapi-starter.version>
