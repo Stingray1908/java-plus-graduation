@@ -1,2 +1,39 @@
 server:
   port: 0
+
+kafka:
+  consumer:
+    bootstrap-servers: localhost:9092
+    auto-offset-reset: earliest
+    enable-auto-commit: false
+    similarity-group-id: analyzer-similarity
+    actions-group-id: analyzer-actions
+  topics:
+    user-actions: stats.user-actions.v1
+    events-similarity: stats.events-similarity.v1
+
+logging:
+  level:
+    root: INFO
+    ru.yandex.practicum: INFO          # твои пакеты — максимум деталей
+    org.springframework.kafka: INFO    # логи Kafka-слушателей
+    org.apache.kafka.clients: INFO     # клиентские логи (подключения, оффсеты)
+    org.apache.kafka.common: INFO      # общие логи Kafka
+    # Если есть проблемы с десериализацией — это критично:
+    org.springframework.kafka.listener: INFO
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: password
