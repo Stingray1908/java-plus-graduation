@@ -1,13 +1,27 @@
 server:
   port: 0
 
-spring:
-  kafka:
-    consumer:
-      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: ru.practicum.aggregator.config.UserActionAvroDeserializer
-    producer:
-      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: ru.practicum.aggregator.config.BaseAvroSerializer
+kafka:
+  bootstrap-servers: localhost:9092
+  consumer:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    group-id: aggregator-group
+    auto-offset-reset: earliest
+    enable-auto-commit: false
+  topics:
+    user-actions: stats.user-actions.v1
+    events-similarity: stats.events-similarity.v1
+  producer:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: ru.yandex.practicum.config.BaseAvroSerializer
+
+logging:
+  level:
+    root: INFO
+    ru.yandex.practicum: INFO          # твои пакеты — максимум деталей
+    org.springframework.kafka: INFO    # логи Kafka-слушателей
+    org.apache.kafka.clients: INFO     # клиентские логи (подключения, оффсеты)
+    org.apache.kafka.common: INFO      # общие логи Kafka
+    # Если есть проблемы с десериализацией — это критично:
+    org.springframework.kafka.listener: INFO

@@ -42,5 +42,6 @@ docker run -d --name userServ -e POSTGRES_DB=user_db -e POSTGRES_USER=dbuser -e 
 
 
 
-Запустил ДИСКАВЕРИ конфиг, ворота, БАЗЫ, стат, евент, коллектор
+Запустил ДИСКАВЕРИ конфиг, ворота, БАЗЫ, стат, евент, коллектор, AGGREGATOR
+
 шлю

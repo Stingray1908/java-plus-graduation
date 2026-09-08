@@ -18,7 +18,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class UserActionControllerImpl extends UserActionControllerImplBase {
 
-    private static final String TOPIC = "stats.actions.v1";
+    private static final String TOPIC = "stats.user-actions.v1";
 
     private final KafkaTemplate<String, UserActionAvro> kafkaTemplate;
 
