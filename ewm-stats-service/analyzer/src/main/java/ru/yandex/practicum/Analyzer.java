@@ -6,8 +6,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.ConfigurableApplicationContext;
-import ru.yandex.practicum.service.EventSimilarityProcessor;
-import ru.yandex.practicum.service.UserActionProcessor;
+import ru.yandex.practicum.processor.EventSimilarityProcessor;
+import ru.yandex.practicum.processor.UserActionProcessor;
 
 @ConfigurationPropertiesScan
     @Slf4j

@@ -1,4 +1,8 @@
-eureka:
+grpc:
+  server:
+    port: -1
+
+1eureka:
   instance:
     prefer-ip-address: true
     hostname: localhost

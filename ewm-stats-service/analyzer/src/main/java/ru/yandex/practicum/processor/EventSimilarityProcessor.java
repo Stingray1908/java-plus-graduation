@@ -1,10 +1,12 @@
-package ru.yandex.practicum.service;
+package ru.yandex.practicum.processor;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
+import ru.yandex.practicum.repo.EventSimilarityRepository;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,15 +16,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class EventSimilarityProcessor implements Runnable {
 
-    private final Consumer<String, ru.practicum.ewm.stats.avro.EventSimilarityAvro> consumer;
+    private final Consumer<String, EventSimilarityAvro> consumer;
+    private final EventSimilarityRepository similarityRepository;
     private final String topic = "stats.events-similarity.v1";
-
     private final AtomicBoolean running = new AtomicBoolean(true);
 
     public EventSimilarityProcessor(
             @Qualifier("eventSimilarityConsumer")
-            Consumer<String, ru.practicum.ewm.stats.avro.EventSimilarityAvro> consumer) {
+            Consumer<String, EventSimilarityAvro> consumer,
+            EventSimilarityRepository similarityRepository) {
         this.consumer = consumer;
+        this.similarityRepository = similarityRepository;
     }
 
     @Override
@@ -34,20 +38,18 @@ public class EventSimilarityProcessor implements Runnable {
             while (running.get()) {
                 var records = consumer.poll(Duration.ofSeconds(5));
                 for (var record : records) {
-                    String key = record.key(); // обычно это пара "eventA_eventB"
-                    ru.practicum.ewm.stats.avro.EventSimilarityAvro value = record.value();
+                    String key = record.key();
+                    EventSimilarityAvro value = record.value();
 
                     if (value == null) {
                         log.warn("Received null value for key={} in topic={}", key, topic);
                         continue;
                     }
 
-                    log.info("Processing similarity: key={}, similarity={}",
-                            key, value);
-
-                    // TODO: сохранить сходство мероприятий в БД
+                    log.info("Processing similarity: key={}, similarity={}", key, value);
                     processSimilarity(key, value);
                 }
+                consumer.commitSync();
             }
         } catch (Exception e) {
             log.error("Error in EventSimilarityProcessor loop", e);
@@ -57,11 +59,16 @@ public class EventSimilarityProcessor implements Runnable {
         }
     }
 
-    private void processSimilarity(String key, ru.practicum.ewm.stats.avro.EventSimilarityAvro similarity) {
-        // Здесь логика сохранения сходства мероприятий:
-        // - распарсить key на eventId1 и eventId2
-        // - положить similarity.getSimilarity() в таблицу сходств
-        log.trace("Storing similarity for pair={}, value={}", key, similarity);
+    private void processSimilarity(String key, EventSimilarityAvro similarity) {
+        long eventA = similarity.getEventA();
+        long eventB = similarity.getEventB();
+        double score = similarity.getScore();
+
+        long first = Math.min(eventA, eventB);
+        long second = Math.max(eventA, eventB);
+
+        similarityRepository.upsertScore(first, second, score);
+        log.debug("Saved similarity: ({}, {}) -> {}", first, second, score);
     }
 
     public void stop() {

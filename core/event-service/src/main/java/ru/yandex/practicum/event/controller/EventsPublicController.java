@@ -97,10 +97,10 @@ public class EventsPublicController implements EventsPublicFeign {
                 .build();
         statsClient.hit(hit);*/
 
-        Random random = new Random();
+       /* Random random = new Random();
         long i = random.nextLong(1000);
         sendUserAction(i, i, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW);
-
+*/
         List<EventShortDto> events = eventService.getPublishedEvents(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
                 EventsSortType.valueOf(sort), from, size
