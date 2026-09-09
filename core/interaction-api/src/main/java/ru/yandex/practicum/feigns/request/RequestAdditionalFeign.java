@@ -15,4 +15,9 @@ public interface RequestAdditionalFeign {
     List<Object[]> countRequestsByEventIdsAndStatus(
             @RequestParam("eventIds") List<Long> eventIds,
             @RequestParam("status") EventState status);
+
+    @GetMapping("/users/requests/exists")
+    boolean hasConfirmedRequest(@RequestParam("userId") long userId,
+                                @RequestParam("eventId") long eventId);
+
 }

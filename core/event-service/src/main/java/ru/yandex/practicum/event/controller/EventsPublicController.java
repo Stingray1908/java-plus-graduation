@@ -43,6 +43,16 @@ public class EventsPublicController implements EventsPublicFeign {
         this.collectorClient = collectorClient;
     }
 
+    @PutMapping("/{eventId}/like")
+    public ResponseEntity<Void> likeEvent(
+            @RequestHeader("X-EWM-USER-ID") long userId,
+            @PathVariable Long eventId
+    ) {
+        eventService.likeEvent(userId, eventId);
+        sendUserAction(userId, eventId, UserActionProtoOuterClass.ActionTypeProto.ACTION_LIKE);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<EventShortDto>> getEvents(
             @RequestParam(required = false)
@@ -79,17 +89,17 @@ public class EventsPublicController implements EventsPublicFeign {
 
             HttpServletRequest request
     ) {
-        EndpointHit hit = EndpointHit.builder()
+        /*EndpointHit hit = EndpointHit.builder()
                 .app("ewm-main-service")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now())
                 .build();
-        statsClient.hit(hit);
+        statsClient.hit(hit);*/
 
         Random random = new Random();
         long i = random.nextLong(1000);
-        collectorClient.sendUserAction(i, i, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW, Instant.now());
+        sendUserAction(i, i, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW);
 
         List<EventShortDto> events = eventService.getPublishedEvents(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
@@ -107,21 +117,31 @@ public class EventsPublicController implements EventsPublicFeign {
         return ResponseEntity.ok(event);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{eventId}")
     public ResponseEntity<EventFullDto> getEventById(
-            @PathVariable Long id,
+            @RequestHeader("X-EWM-USER-ID") long userId,
+            @PathVariable Long eventId,
             HttpServletRequest request
     ) {
-        EndpointHit hit = EndpointHit.builder()
+        /*EndpointHit hit = EndpointHit.builder()
                 .app("ewm-main-service")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now())
                 .build();
-        statsClient.hit(hit);
+        statsClient.hit(hit);*/
 
-        EventFullDto event = eventService.getPublishedEventById(id);
+        sendUserAction(userId, eventId, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW);
+        EventFullDto event = eventService.getPublishedEventById(eventId);
         return ResponseEntity.ok(event);
+    }
+
+    private void sendUserAction (long userId, long eventId, UserActionProtoOuterClass.ActionTypeProto actionType){
+        collectorClient.sendUserAction(
+                userId,
+                eventId,
+                actionType,
+                Instant.now());
     }
 
 }

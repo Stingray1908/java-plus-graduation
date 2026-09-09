@@ -24,4 +24,10 @@ public class RequestAdditionalController implements RequestAdditionalFeign {
     public List<Object[]> countRequestsByEventIdsAndStatus(List<Long> eventIds, EventState status) {
         return requestsService.countRequestsByEventIdsAndStatus(eventIds, status);
     }
+
+    @Override
+    public boolean hasConfirmedRequest(long userId, long eventId) {
+        return requestsService.hasConfirmedRequest(userId, eventId);
+    }
+
 }

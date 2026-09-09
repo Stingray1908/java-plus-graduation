@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
@@ -140,6 +141,25 @@ public class EventsServiceImpl implements EventsService {
                 getRatingsMap(uniqueIds),
                 getViewsMap(uniqueIds));
     }
+
+    @Override
+    public void likeEvent(long userId, long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new BadRequestException("Event must be published");
+        }
+
+        if (event.getEventDate().isAfter(LocalDateTime.now())) {
+            throw new BadRequestException ("Event has not yet taken place");
+        }
+
+        if (!requestAdditionalFeign.hasConfirmedRequest(userId, eventId)) {
+            throw new BadRequestException ("User has no confirmed registration for this event");
+        }
+    }
+
 
     @Override
     public EventFullDto saveEvent(NewEventDto newEventDto, Long userId) {
