@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package stats.service.analyzer;  // пакет сервиса (может быть stats.service.collector и т.п.)
+package stats.service.dashboard;
 
 option java_package = "ru.yandex.practicum.grpc.recommendation";
 option java_outer_classname = "RecommendationsServiceProto";

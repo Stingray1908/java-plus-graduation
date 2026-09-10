@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package stats.message;  // <-- важно: отдельный пакет для сообщений
+package stats.message;
 
 option java_package = "ru.yandex.practicum.grpc.recommendation";
 option java_outer_classname = "RecommendationsMessagesProto";
