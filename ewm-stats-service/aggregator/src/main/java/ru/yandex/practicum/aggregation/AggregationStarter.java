@@ -23,8 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AggregationStarter {
 
-    private final KafkaConsumer<String, UserActionAvro> consumer;
-    private final KafkaProducer<String, EventSimilarityAvro> producer;
+    private final KafkaConsumer<Long, UserActionAvro> consumer;
+    private final KafkaProducer<Long, EventSimilarityAvro> producer;
     private final KafkaProperties properties;
     private final SimilarityCalculator calculator = new SimilarityCalculator();
 
@@ -39,12 +39,12 @@ public class AggregationStarter {
 
         try {
             while (running) {
-                ConsumerRecords<String, UserActionAvro> records =
+                ConsumerRecords<Long, UserActionAvro> records =
                         consumer.poll(Duration.ofMillis(2000));
 
                 if (records.isEmpty()) continue;
 
-                for (ConsumerRecord<String, UserActionAvro> record : records) {
+                for (ConsumerRecord<Long, UserActionAvro> record : records) {
                     UserActionAvro action = record.value();
                     log.info("Получено действие: userId={}, eventId={}, action={}",
                             action.getUserId(), action.getEventId(), action.getActionType());
@@ -52,7 +52,7 @@ public class AggregationStarter {
                     List<EventSimilarityAvro> updates = calculator.processAction(action);
 
                     for (EventSimilarityAvro sim : updates) {
-                        ProducerRecord<String, EventSimilarityAvro> producerRecord =
+                        ProducerRecord<Long, EventSimilarityAvro> producerRecord =
                                 new ProducerRecord<>(
                                         outputTopic,
                                         null,

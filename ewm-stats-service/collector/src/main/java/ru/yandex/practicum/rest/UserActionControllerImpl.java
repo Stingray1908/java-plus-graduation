@@ -21,7 +21,7 @@ public class UserActionControllerImpl extends UserActionControllerImplBase {
 
     private static final String TOPIC = "stats.user-actions.v1";
 
-    private final KafkaProducer<String, UserActionAvro> kafkaProducer;
+    private final KafkaProducer<Long, UserActionAvro> kafkaProducer;
 
     @Override
     public void collectUserAction(UserActionProto request, StreamObserver<Empty> responseObserver) {
@@ -35,8 +35,8 @@ public class UserActionControllerImpl extends UserActionControllerImplBase {
                 .setTimestamp(mapTimestamp(request.getTimestamp()))
                 .build();
 
-        ProducerRecord<String, UserActionAvro> record =
-                new ProducerRecord<>(TOPIC, String.valueOf(request.getUserId()), avro);
+        ProducerRecord<Long, UserActionAvro> record =
+                new ProducerRecord<>(TOPIC, request.getUserId(), avro);
         kafkaProducer.send(record);
 
         responseObserver.onNext(Empty.getDefaultInstance());

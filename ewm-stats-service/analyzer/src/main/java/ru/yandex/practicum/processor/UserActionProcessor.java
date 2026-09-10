@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class UserActionProcessor implements Runnable {
 
-    private final Consumer<String, UserActionAvro> consumer;
+    private final Consumer<Long, UserActionAvro> consumer;
     private final UserActionRepository userActionRepository;
     private final String topic = "stats.user-actions.v1";
     private final AtomicBoolean running = new AtomicBoolean(true);
@@ -34,7 +34,7 @@ public class UserActionProcessor implements Runnable {
 
     public UserActionProcessor(
             @Qualifier("userActionConsumer")
-            Consumer<String, UserActionAvro> consumer,
+            Consumer<Long, UserActionAvro> consumer,
             UserActionRepository userActionRepository) {
         this.consumer = consumer;
         this.userActionRepository = userActionRepository;
@@ -49,7 +49,7 @@ public class UserActionProcessor implements Runnable {
             while (running.get()) {
                 var records = consumer.poll(Duration.ofSeconds(5));
                 for (var record : records) {
-                    String key = record.key();
+                    Long key = record.key();
                     UserActionAvro value = record.value();
 
                     if (value == null) {
@@ -72,7 +72,7 @@ public class UserActionProcessor implements Runnable {
         }
     }
 
-    private void processUserAction(String key, UserActionAvro action) {
+    private void processUserAction(Long key, UserActionAvro action) {
         long userId = action.getUserId();
         long eventId = action.getEventId();
         String actionType = action.getActionType().name();

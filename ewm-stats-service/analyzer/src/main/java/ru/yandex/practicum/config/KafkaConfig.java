@@ -2,6 +2,7 @@ package ru.yandex.practicum.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,30 +30,30 @@ public class KafkaConfig {
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
                 kafkaProperties.getConsumer().isEnableAutoCommit());
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class);
+                LongDeserializer.class);
         return config;
     }
 
     @Bean
-    public KafkaConsumer<String, EventSimilarityAvro> eventSimilarityConsumer() {
+    public KafkaConsumer<Long, EventSimilarityAvro> eventSimilarityConsumer() {
         Map<String, Object> config = baseConsumerConfig();
         config.put(ConsumerConfig.GROUP_ID_CONFIG,
                 kafkaProperties.getConsumer().getSimilarityGroupId());
         return new KafkaConsumer<>(
                 config,
-                new StringDeserializer(),
+                new LongDeserializer(),
                 new EventSimilarityAvroDeserializer()
         );
     }
 
     @Bean
-    public KafkaConsumer<String, UserActionAvro> userActionConsumer() {
+    public KafkaConsumer<Long, UserActionAvro> userActionConsumer() {
         Map<String, Object> config = baseConsumerConfig();
         config.put(ConsumerConfig.GROUP_ID_CONFIG,
                 kafkaProperties.getConsumer().getActionsGroupId());
         return new KafkaConsumer<>(
                 config,
-                new StringDeserializer(),
+                new LongDeserializer(),
                 new UserActionAvroDeserializer()
         );
     }

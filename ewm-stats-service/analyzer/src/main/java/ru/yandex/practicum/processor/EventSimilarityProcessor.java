@@ -16,14 +16,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class EventSimilarityProcessor implements Runnable {
 
-    private final Consumer<String, EventSimilarityAvro> consumer;
+    private final Consumer<Long, EventSimilarityAvro> consumer;
     private final EventSimilarityRepository similarityRepository;
     private final String topic = "stats.events-similarity.v1";
     private final AtomicBoolean running = new AtomicBoolean(true);
 
     public EventSimilarityProcessor(
             @Qualifier("eventSimilarityConsumer")
-            Consumer<String, EventSimilarityAvro> consumer,
+            Consumer<Long, EventSimilarityAvro> consumer,
             EventSimilarityRepository similarityRepository) {
         this.consumer = consumer;
         this.similarityRepository = similarityRepository;
@@ -38,7 +38,7 @@ public class EventSimilarityProcessor implements Runnable {
             while (running.get()) {
                 var records = consumer.poll(Duration.ofSeconds(5));
                 for (var record : records) {
-                    String key = record.key();
+                    Long key = record.key();
                     EventSimilarityAvro value = record.value();
 
                     if (value == null) {
@@ -59,7 +59,7 @@ public class EventSimilarityProcessor implements Runnable {
         }
     }
 
-    private void processSimilarity(String key, EventSimilarityAvro similarity) {
+    private void processSimilarity(Long key, EventSimilarityAvro similarity) {
         long eventA = similarity.getEventA();
         long eventB = similarity.getEventB();
         double score = similarity.getScore();

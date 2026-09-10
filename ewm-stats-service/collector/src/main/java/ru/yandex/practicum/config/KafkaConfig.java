@@ -17,7 +17,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaProducer<String, UserActionAvro> kafkaProducer() {
+    public KafkaProducer<Long, UserActionAvro> kafkaProducer() {
         Properties props = new Properties();
 
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,

@@ -5,6 +5,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +25,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumer<String, ru.practicum.ewm.stats.avro.UserActionAvro> kafkaConsumer(KafkaProperties properties) {
+    public KafkaConsumer<Long, ru.practicum.ewm.stats.avro.UserActionAvro> kafkaConsumer(KafkaProperties properties) {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getConsumer().getBootstrapServers());
         config.put(ConsumerConfig.GROUP_ID_CONFIG, properties.getConsumer().getGroupId());
@@ -33,14 +34,14 @@ public class KafkaConfig {
 
         return new KafkaConsumer<>(
                 config,
-                new StringDeserializer(),
+                new LongDeserializer(),
                 new ru.yandex.practicum.config.UserActionAvroDeserializer()
         );
     }
 
 
     @Bean
-    public KafkaProducer<String, EventSimilarityAvro> kafkaProducer() {
+    public KafkaProducer<Long, EventSimilarityAvro> kafkaProducer() {
         Properties props = new Properties();
 
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
