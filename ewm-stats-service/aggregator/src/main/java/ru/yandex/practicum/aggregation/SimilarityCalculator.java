@@ -10,9 +10,9 @@ import java.util.*;
 public class SimilarityCalculator {
 
     private static final Map<ActionTypeAvro, Double> WEIGHTS = Map.of(
-            ActionTypeAvro.VIEW,     0.1,
-            ActionTypeAvro.REGISTER, 0.2,
-            ActionTypeAvro.LIKE,     0.5
+            ActionTypeAvro.VIEW,     0.4,
+            ActionTypeAvro.REGISTER, 0.8,
+            ActionTypeAvro.LIKE,     1.0
     );
 
     // eventId -> (userId -> максимальный вес действия пользователя)
@@ -74,6 +74,10 @@ public class SimilarityCalculator {
         for (long otherEventId : eventUserWeights.keySet()) {
             if (otherEventId == eventId) continue;
 
+            // Только если пользователь взаимодействовал с обоими мероприятиями
+            Map<Long, Double> otherUsers = eventUserWeights.get(otherEventId);
+            if (otherUsers == null || !otherUsers.containsKey(userId)) continue;
+
             double sMin = getMinWeight(eventId, otherEventId);
             double sB   = eventSums.getOrDefault(otherEventId, 0.0);
 
@@ -83,7 +87,8 @@ public class SimilarityCalculator {
             } else {
                 score = sMin / (Math.sqrt(newS_A) * Math.sqrt(sB));
             }
-            if (score > 0.0) {                          // <-- вот это
+
+            if (score > 0.0) {
                 updates.add(EventSimilarityAvro.newBuilder()
                         .setEventA(Math.min(eventId, otherEventId))
                         .setEventB(Math.max(eventId, otherEventId))
