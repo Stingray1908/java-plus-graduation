@@ -20,9 +20,9 @@ public class RecommendationsService {
     private final UserActionRepository userActionRepository;
 
     private static final Map<String, Double> WEIGHTS = Map.of(
-            "VIEW", 0.1,
-            "REGISTER", 0.2,
-            "LIKE", 0.5
+            "VIEW", 0.4,
+            "REGISTER", 0.8,
+            "LIKE", 1.0
     );
 
     /**
