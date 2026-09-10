@@ -4,6 +4,7 @@ import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 
+import java.time.Instant;
 import java.util.*;
 
 public class SimilarityCalculator {
@@ -82,13 +83,14 @@ public class SimilarityCalculator {
             } else {
                 score = sMin / (Math.sqrt(newS_A) * Math.sqrt(sB));
             }
-
-            updates.add(EventSimilarityAvro.newBuilder()
-                    .setEventA(Math.min(eventId, otherEventId))
-                    .setEventB(Math.max(eventId, otherEventId))
-                    .setScore(score)
-                    .setTimestamp(action.getTimestamp())
-                    .build());
+            if (score > 0.0) {                          // <-- вот это
+                updates.add(EventSimilarityAvro.newBuilder()
+                        .setEventA(Math.min(eventId, otherEventId))
+                        .setEventB(Math.max(eventId, otherEventId))
+                        .setScore(score)
+                        .setTimestamp(Instant.now())
+                        .build());
+            }
         }
 
         return updates;

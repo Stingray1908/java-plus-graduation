@@ -16,7 +16,7 @@ docker run -d --name eventServ -e POSTGRES_DB=event_db -e POSTGRES_USER=dbuser -
 docker run -d --name userServ -e POSTGRES_DB=user_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5435:5432 --restart unless-stopped postgres:15-alpine
 
 
-java -jar tester-0.0.1.jar --tester.execution.mode=COLLECTION --tester.execution.output.file-path=./report.txt
+java -jar tester-0.0.1.jar --tester.execution.mode=AGGREGATION --tester.execution.output.file-path=./report.txt
 
 
 так, значит что делаем по порядку
