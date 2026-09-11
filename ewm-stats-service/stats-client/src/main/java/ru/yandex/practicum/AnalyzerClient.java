@@ -1,5 +1,6 @@
 package ru.yandex.practicum;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+
 public class AnalyzerClient {
 
     @GrpcClient("analyzer")
