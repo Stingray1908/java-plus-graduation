@@ -3,8 +3,12 @@ server:
 
 grpc:
   client:
-    grpcCollector:
+    collector:
       address: discovery:///collector
+      negotiation-type: plaintext
+
+    analyzer:
+      address: discovery:///analyzer
       negotiation-type: plaintext
 
 spring:

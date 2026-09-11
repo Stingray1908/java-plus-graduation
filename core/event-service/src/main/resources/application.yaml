@@ -8,8 +8,11 @@ eureka:
 
 grpc:
   client:
-    grpcCollector:
-      address: discovery:///collector
+    collector:
+      address: 'discovery:///collector'
+      negotiation-type: plaintext
+    analyzer:
+      address: 'discover://analyzer'
       negotiation-type: plaintext
 
 spring:

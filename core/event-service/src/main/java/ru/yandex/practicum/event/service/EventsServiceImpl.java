@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.AnalyzerClient;
 import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.categories.service.CategoryService;
 import ru.yandex.practicum.categories.service.CategoryServiceImpl;
@@ -37,6 +38,8 @@ import ru.yandex.practicum.event.moderation.ModerationService;
 import ru.yandex.practicum.event.repo.EventsRepository;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
+import ru.yandex.practicum.grpc.recommendation.RecommendedEventResponse;
+import ru.yandex.practicum.grpc.recommendation.UserPredictionsRequestProto;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
 import ru.yandex.practicum.subscriptions.SubscriptionRepository;
 import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
@@ -64,6 +67,7 @@ public class EventsServiceImpl implements EventsService {
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final ModerationService moderationService;
     private final RateServiceImpl rateService;
+    private final AnalyzerClient analyzerClient;
 
     public EventsServiceImpl(SubscriptionRepository subscriptionRepository,
                              UserAdminFeign userAdminFeign,
@@ -73,7 +77,8 @@ public class EventsServiceImpl implements EventsService {
                              EntityManager entityManager,
                              RequestAdditionalFeign requestAdditionalFeign,
                              ModerationService moderationService,
-                             RateServiceImpl rateService) {
+                             RateServiceImpl rateService,
+                             AnalyzerClient analyzerClient) {
         this.subscriptionRepository = subscriptionRepository;
         this.userAdminFeign = userAdminFeign;
         this.categoryService = categoryService;
@@ -83,6 +88,7 @@ public class EventsServiceImpl implements EventsService {
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.moderationService = moderationService;
         this.rateService = rateService;
+        this.analyzerClient = analyzerClient;
     }
 
     @Override
@@ -600,6 +606,62 @@ public class EventsServiceImpl implements EventsService {
 
         return rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
     }
+
+    public List<EventShortDto> getRecommendations(long userId, int maxResults) {
+        List<AnalyzerClient.ScoredEvent> scored =
+                analyzerClient.getRecommendationsForUser(userId, maxResults);
+
+        if (scored.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> eventIds = scored.stream()
+                .map(AnalyzerClient.ScoredEvent::eventId)
+                .toList();
+
+        List<Event> events = eventRepository.findAllById(eventIds);
+
+        Map<Long, Event> eventMap = events.stream()
+                .collect(Collectors.toMap(Event::getId, e -> e));
+
+        Map<Long, Double> ratingMap = buildRatingMap(eventIds);
+
+        return scored.stream()
+                .map(s -> {
+                    Event event = eventMap.get(s.eventId());
+                    if (event == null) return null;
+                    EventShortDto dto = toShortEventDto(event,
+                            getConfirmedRequestsForEvent(event.getId()),
+                            getUserById(userId),
+                            categoryService.getCategoryById(event.getCategoryId()),
+                            null,
+                            null);
+                    dto.setRatings(ratingMap.getOrDefault(s.eventId(), s.score()));
+                    return dto;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /**
+     * Запрашивает рейтинги у анализатора одним gRPC-запросом.
+     * Возвращает мапу: eventId -> score.
+     */
+    private Map<Long, Double> buildRatingMap(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<AnalyzerClient.ScoredEvent> counts =
+                analyzerClient.getInteractionsCount(eventIds);
+
+        return counts.stream()
+                .collect(Collectors.toMap(
+                        AnalyzerClient.ScoredEvent::eventId,
+                        AnalyzerClient.ScoredEvent::score
+                ));
+    }
+
 
     private Map<Long, Long> getViewsMap(List<Long> events) {
         if (events.isEmpty()) return Map.of();
