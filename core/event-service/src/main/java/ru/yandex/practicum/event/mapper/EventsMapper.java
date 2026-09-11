@@ -24,7 +24,8 @@ public class EventsMapper {
                                                 Long confirmedRequests,
                                                 UserShortDto user,
                                                 CategoryDto category,
-                                                Long rating) {
+                                                Long rating,
+                                                Long views) {
         EventShortDto dto = new EventShortDto();
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
@@ -35,6 +36,7 @@ public class EventsMapper {
         dto.setInitiator(user);
         dto.setCategory(category);
         dto.setRating(rating != null ? rating : 0L);
+        dto.setViews(views != null ? views : 0L);
         return dto;
     }
 
@@ -49,7 +51,8 @@ public class EventsMapper {
                         confirmedRequests.getOrDefault(e.getId(), 0L),
                         userMap.get(e.getInitiatorId()),
                         categoryMap.get(e.getCategoryId()),
-                        ratings.getOrDefault(e.getId(), 0L)))
+                        ratings.getOrDefault(e.getId(), 0L),
+                        views.getOrDefault(e.getId(), 0L)))
                 .toList();
     }
 
@@ -59,7 +62,7 @@ public class EventsMapper {
                                               ModerationCommentShortDto commentShortDto,
                                               Long confirmedRequests,
                                               Long rating,
-                                              Long view) {
+                                              Long views) {
         Location location = new Location(event.getLocationLat(), event.getLocationLon());
 
         EventFullDto dto = new EventFullDto();
@@ -80,6 +83,7 @@ public class EventsMapper {
         dto.setState(event.getState().name());
         dto.setTitle(event.getTitle());
         dto.setRating(rating != null ? rating : 0L);
+        dto.setViews(views != null ? views : 0L);
 
         return dto;
     }
@@ -98,8 +102,7 @@ public class EventsMapper {
                         commentMap.getOrDefault(e.getId(), null),
                         confirmedRequestsMap.getOrDefault(e.getId(), 0L),
                         ratings.getOrDefault(e.getId(), 0L),
-                        views.getOrDefault(e.getId(), 0L)
-                        ))
+                        views.getOrDefault(e.getId(), 0L)))
                 .toList();
     }
 
@@ -126,6 +129,7 @@ public class EventsMapper {
                 .state(EventState.PENDING)
                 .initiatorId(user)
                 .confirmedRequests(0L)
+                .views(0L)
                 .build();
     }
 

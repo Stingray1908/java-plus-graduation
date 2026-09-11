@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.AnalyzerClient;
-import ru.yandex.practicum.AnalyzerClient;
 import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.categories.service.CategoryService;
 import ru.yandex.practicum.categories.service.CategoryServiceImpl;
@@ -89,7 +88,6 @@ public class EventsServiceImpl implements EventsService {
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.moderationService = moderationService;
         this.rateService = rateService;
-
         this.analyzerClient = analyzerClient;
     }
 
@@ -609,7 +607,6 @@ public class EventsServiceImpl implements EventsService {
         return rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
     }
 
-    @Override
     public List<EventShortDto> getRecommendations(long userId, int maxResults) {
         List<AnalyzerClient.ScoredEvent> scored =
                 analyzerClient.getRecommendationsForUser(userId, maxResults);
@@ -637,8 +634,9 @@ public class EventsServiceImpl implements EventsService {
                             getConfirmedRequestsForEvent(event.getId()),
                             getUserById(userId),
                             categoryService.getCategoryById(event.getCategoryId()),
-                            0L);
-                    //dto.setRating(ratingMap.getOrDefault(s.eventId(), s.score()));
+                            null,
+                            null);
+                    dto.setRatings(ratingMap.getOrDefault(s.eventId(), s.score()));
                     return dto;
                 })
                 .filter(Objects::nonNull)
@@ -663,6 +661,7 @@ public class EventsServiceImpl implements EventsService {
                         AnalyzerClient.ScoredEvent::score
                 ));
     }
+
 
     private Map<Long, Long> getViewsMap(List<Long> events) {
         if (events.isEmpty()) return Map.of();

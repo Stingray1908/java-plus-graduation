@@ -12,7 +12,7 @@ grpc:
       address: 'discovery:///collector'
       negotiation-type: plaintext
     analyzer:
-      address: 'discovery:///analyzer'
+      address: 'discover://analyzer'
       negotiation-type: plaintext
 
 spring:
