@@ -39,6 +39,8 @@ import ru.yandex.practicum.event.moderation.ModerationService;
 import ru.yandex.practicum.event.repo.EventsRepository;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
+import ru.yandex.practicum.grpc.recommendation.RecommendedEventResponse;
+import ru.yandex.practicum.grpc.recommendation.UserPredictionsRequestProto;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
 import ru.yandex.practicum.subscriptions.SubscriptionRepository;
 import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
@@ -67,7 +69,7 @@ public class EventsServiceImpl implements EventsService {
     private final ModerationService moderationService;
     private final RateServiceImpl rateService;
     private final AnalyzerClient analyzerClient;
-    
+
     public EventsServiceImpl(SubscriptionRepository subscriptionRepository,
                              UserAdminFeign userAdminFeign,
                              CategoryService categoryService,
@@ -76,7 +78,7 @@ public class EventsServiceImpl implements EventsService {
                              EntityManager entityManager,
                              RequestAdditionalFeign requestAdditionalFeign,
                              ModerationService moderationService,
-                             RateServiceImpl rateService, 
+                             RateServiceImpl rateService,
                              AnalyzerClient analyzerClient) {
         this.subscriptionRepository = subscriptionRepository;
         this.userAdminFeign = userAdminFeign;
@@ -661,7 +663,7 @@ public class EventsServiceImpl implements EventsService {
                         AnalyzerClient.ScoredEvent::score
                 ));
     }
-    
+
     private Map<Long, Long> getViewsMap(List<Long> events) {
         if (events.isEmpty()) return Map.of();
 
