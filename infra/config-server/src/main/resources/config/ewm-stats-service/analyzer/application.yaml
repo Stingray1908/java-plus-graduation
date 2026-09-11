@@ -15,11 +15,10 @@ kafka:
 logging:
   level:
     root: INFO
-    ru.yandex.practicum: INFO          # твои пакеты — максимум деталей
-    org.springframework.kafka: INFO    # логи Kafka-слушателей
-    org.apache.kafka.clients: INFO     # клиентские логи (подключения, оффсеты)
-    org.apache.kafka.common: INFO      # общие логи Kafka
-    # Если есть проблемы с десериализацией — это критично:
+    ru.yandex.practicum: INFO
+    org.springframework.kafka: INFO
+    org.apache.kafka.clients: INFO
+    org.apache.kafka.common: INFO
     org.springframework.kafka.listener: INFO
 
 spring:

@@ -5,14 +5,6 @@ grpc:
 server:
   port: 0
 
-#spring:
- # kafka:
-  #  producer:
-   #   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    #  key-serializer: org.apache.kafka.common.serialization.StringSerializer
-     # value-serializer: ru.yandex.practicum.config.BaseAvroSerializer
-
-
 kafka:
   bootstrap-servers: localhost:9092
   topics:
