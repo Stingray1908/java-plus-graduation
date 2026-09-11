@@ -39,11 +39,11 @@ public class KafkaConfig {
         Map<String, Object> config = baseConsumerConfig();
         config.put(ConsumerConfig.GROUP_ID_CONFIG,
                 kafkaProperties.getConsumer().getSimilarityGroupId());
-        return new KafkaConsumer<>(
-                config,
-                new LongDeserializer(),
-                new EventSimilarityAvroDeserializer()
-        );
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                kafkaProperties.getConsumer().getEventSimilarityDeserializer());
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                kafkaProperties.getConsumer().getKeyDeserializer());
+        return new KafkaConsumer<>(config);
     }
 
     @Bean
@@ -51,10 +51,10 @@ public class KafkaConfig {
         Map<String, Object> config = baseConsumerConfig();
         config.put(ConsumerConfig.GROUP_ID_CONFIG,
                 kafkaProperties.getConsumer().getActionsGroupId());
-        return new KafkaConsumer<>(
-                config,
-                new LongDeserializer(),
-                new UserActionAvroDeserializer()
-        );
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                kafkaProperties.getConsumer().getUserActionDeserializer());
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                kafkaProperties.getConsumer().getKeyDeserializer());
+        return new KafkaConsumer<>(config);
     }
 }

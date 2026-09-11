@@ -27,16 +27,15 @@ public class KafkaConfig {
     @Bean
     public KafkaConsumer<Long, ru.practicum.ewm.stats.avro.UserActionAvro> kafkaConsumer(KafkaProperties properties) {
         Map<String, Object> config = new HashMap<>();
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getConsumer().getBootstrapServers());
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServer());
         config.put(ConsumerConfig.GROUP_ID_CONFIG, properties.getConsumer().getGroupId());
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getConsumer().getAutoOffsetReset());
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getConsumer().isEnableAutoCommit());
-
-        return new KafkaConsumer<>(
-                config,
-                new LongDeserializer(),
-                new ru.yandex.practicum.config.UserActionAvroDeserializer()
-        );
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                kafkaProperties.getConsumer().getValueDeserializer());
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                kafkaProperties.getConsumer().getKeyDeserializer());
+        return new KafkaConsumer<>(config);
     }
 
 
@@ -45,7 +44,7 @@ public class KafkaConfig {
         Properties props = new Properties();
 
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                kafkaProperties.getProducer().getBootstrapServers());
+                kafkaProperties.getBootstrapServer());
 
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                 kafkaProperties.getProducer().getKeySerializer());

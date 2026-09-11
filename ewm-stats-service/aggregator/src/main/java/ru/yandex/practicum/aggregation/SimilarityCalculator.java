@@ -31,14 +31,11 @@ public class SimilarityCalculator {
         long eventId      = action.getEventId();
         double actionWeight = WEIGHTS.get(action.getActionType());
 
-        // Карта пользователей для текущего мероприятия
         Map<Long, Double> userWeights =
                 eventUserWeights.computeIfAbsent(eventId, k -> new HashMap<>());
 
-        // Предыдущий максимальный вес этого пользователя с этим мероприятием
         double prevWeight = userWeights.getOrDefault(userId, 0.0);
 
-        // Если новый вес не превышает предыдущий — ничего не меняем
         if (actionWeight <= prevWeight) {
             return updates;
         }

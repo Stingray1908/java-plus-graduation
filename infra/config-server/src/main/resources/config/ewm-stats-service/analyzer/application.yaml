@@ -8,6 +8,9 @@ kafka:
     enable-auto-commit: false
     similarity-group-id: analyzer-similarity
     actions-group-id: analyzer-actions
+    key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+    event-similarity-deserializer: ru.yandex.practicum.config.EventSimilarityAvroDeserializer
+    user-action-deserializer: ru.yandex.practicum.config.UserActionAvroDeserializer
   topics:
     user-actions: stats.user-actions.v1
     events-similarity: stats.events-similarity.v1

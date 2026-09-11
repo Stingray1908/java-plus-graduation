@@ -12,7 +12,6 @@ import ru.yandex.practicum.processor.UserActionProcessor;
 @ConfigurationPropertiesScan
     @Slf4j
     @SpringBootApplication
-   // @EnableConfigurationProperties(ru.yandex.practicum.config.KafkaProperties.class)
     public class Analyzer {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Analyzer.class, args);

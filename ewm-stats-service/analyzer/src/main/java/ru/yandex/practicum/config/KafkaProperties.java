@@ -24,5 +24,8 @@ public class KafkaProperties {
         private boolean enableAutoCommit = false;
         private String similarityGroupId;   // ← новое
         private String actionsGroupId;
+        private String keyDeserializer;
+        private String eventSimilarityDeserializer;
+        private String userActionDeserializer;
     }
 }
