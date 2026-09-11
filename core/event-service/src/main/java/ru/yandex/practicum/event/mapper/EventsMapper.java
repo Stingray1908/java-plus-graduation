@@ -24,8 +24,7 @@ public class EventsMapper {
                                                 Long confirmedRequests,
                                                 UserShortDto user,
                                                 CategoryDto category,
-                                                Long rating,
-                                                Long views) {
+                                                Double rating) {
         EventShortDto dto = new EventShortDto();
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
@@ -35,8 +34,7 @@ public class EventsMapper {
         dto.setTitle(event.getTitle());
         dto.setInitiator(user);
         dto.setCategory(category);
-        dto.setRating(rating != null ? rating : 0L);
-        dto.setViews(views != null ? views : 0L);
+        dto.setRating(rating != null ? rating : 0D);
         return dto;
     }
 
@@ -44,15 +42,14 @@ public class EventsMapper {
                                                            Map<Long, Long> confirmedRequests,
                                                            Map<Long, UserShortDto> userMap,
                                                            Map<Long, CategoryDto> categoryMap,
-                                                           Map<Long, Long> ratings,
+                                                           Map<Long, Double> ratings,
                                                            Map<Long, Long> views) {
         return events.stream()
                 .map(e -> toShortEventDto(e,
                         confirmedRequests.getOrDefault(e.getId(), 0L),
                         userMap.get(e.getInitiatorId()),
                         categoryMap.get(e.getCategoryId()),
-                        ratings.getOrDefault(e.getId(), 0L),
-                        views.getOrDefault(e.getId(), 0L)))
+                        ratings.getOrDefault(e.getId(), 0D)))
                 .toList();
     }
 
@@ -61,8 +58,7 @@ public class EventsMapper {
                                               CategoryDto category,
                                               ModerationCommentShortDto commentShortDto,
                                               Long confirmedRequests,
-                                              Long rating,
-                                              Long views) {
+                                              Double rating) {
         Location location = new Location(event.getLocationLat(), event.getLocationLon());
 
         EventFullDto dto = new EventFullDto();
@@ -82,8 +78,7 @@ public class EventsMapper {
         dto.setRequestModeration(event.getRequestModeration());
         dto.setState(event.getState().name());
         dto.setTitle(event.getTitle());
-        dto.setRating(rating != null ? rating : 0L);
-        dto.setViews(views != null ? views : 0L);
+        dto.setRating(rating != null ? rating : 0D);
 
         return dto;
     }
@@ -93,7 +88,7 @@ public class EventsMapper {
                                                          Map<Long, CategoryDto> categoryMap,
                                                          Map<Long, ModerationCommentShortDto> commentMap,
                                                          Map<Long, Long> confirmedRequestsMap,
-                                                         Map<Long, Long> ratings,
+                                                         Map<Long, Double> ratings,
                                                          Map<Long, Long> views) {
         return events.stream()
                 .map(e -> toEventFullDto(e,
@@ -101,8 +96,8 @@ public class EventsMapper {
                         categoryMap.getOrDefault(e.getCategoryId(), null),
                         commentMap.getOrDefault(e.getId(), null),
                         confirmedRequestsMap.getOrDefault(e.getId(), 0L),
-                        ratings.getOrDefault(e.getId(), 0L),
-                        views.getOrDefault(e.getId(), 0L)))
+                        ratings.getOrDefault(e.getId(), 0D)
+                        ))
                 .toList();
     }
 
@@ -129,7 +124,6 @@ public class EventsMapper {
                 .state(EventState.PENDING)
                 .initiatorId(user)
                 .confirmedRequests(0L)
-                .views(0L)
                 .build();
     }
 
