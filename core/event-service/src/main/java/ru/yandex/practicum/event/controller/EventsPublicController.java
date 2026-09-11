@@ -136,6 +136,16 @@ public class EventsPublicController implements EventsPublicFeign {
         return ResponseEntity.ok(event);
     }
 
+
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<EventShortDto>> getRecommendations(
+            @RequestHeader("X-EWM-USER-ID") long userId,
+            @RequestParam(defaultValue = "10") Integer maxResults
+    ) {
+        List<EventShortDto> recommendations = eventService.getRecommendations(userId, maxResults);
+        return ResponseEntity.ok(recommendations);
+    }
+
     private void sendUserAction (long userId, long eventId, UserActionProtoOuterClass.ActionTypeProto actionType){
         collectorClient.sendUserAction(
                 userId,

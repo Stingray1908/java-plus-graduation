@@ -68,5 +68,4 @@ public class Event {
 
     @Column(nullable = false)
     private Long views = 0L;
-
 }
