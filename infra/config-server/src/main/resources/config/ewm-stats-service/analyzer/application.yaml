@@ -1,6 +1,10 @@
 server:
   port: 0
 
+grpc:
+  server:
+    port: 0
+
 kafka:
   consumer:
     bootstrap-servers: localhost:9092
