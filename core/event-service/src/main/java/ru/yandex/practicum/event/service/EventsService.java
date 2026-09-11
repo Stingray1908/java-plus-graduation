@@ -37,6 +37,8 @@ public interface EventsService {
 
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request);
 
+    void likeEvent(long userId, long eventId);
+
     /**
      * Сохраняет новое событие, инициированное пользователем.
      *
@@ -91,5 +93,5 @@ public interface EventsService {
 
     List<EventShortDto> getEventShortDtoByIdsWithStats(List<Long> ids);
 
-    void likeEvent(long userId, long eventId);
+    List<EventShortDto> getRecommendations(long userId, int maxResults);
 }
