@@ -6,15 +6,6 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
 
-grpc:
-  client:
-    collector:
-      address: 'discovery:///collector'
-      negotiation-type: plaintext
-    analyzer:
-      address: 'discover://analyzer'
-      negotiation-type: plaintext
-
 spring:
   application:
     name: event-service

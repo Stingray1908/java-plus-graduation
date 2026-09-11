@@ -1,12 +1,4 @@
-grpc:
-  server:
-    port: -1
-  client:
-    collector:
-      address: 'discovery:///collector'
-      negotiation-type: plaintext
-      
-1eureka:
+eureka:
   instance:
     prefer-ip-address: true
     hostname: localhost
