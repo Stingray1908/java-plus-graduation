@@ -16,12 +16,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.AnalyzerClient;
 import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.categories.service.CategoryService;
-import ru.yandex.practicum.categories.service.CategoryServiceImpl;
 import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
-import ru.yandex.practicum.dto.events.moderation.ModerationCommentShortDto;
-import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
@@ -31,18 +28,13 @@ import ru.yandex.practicum.error.exception.EventCreationRuleException;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.event.entity.Event;
-import ru.yandex.practicum.event.mapper.EventsMapper;
 import ru.yandex.practicum.event.moderation.ModerationComment;
-import ru.yandex.practicum.event.moderation.ModerationCommentRepository;
 import ru.yandex.practicum.event.moderation.ModerationService;
 import ru.yandex.practicum.event.repo.EventsRepository;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
-import ru.yandex.practicum.grpc.recommendation.RecommendedEventResponse;
-import ru.yandex.practicum.grpc.recommendation.UserPredictionsRequestProto;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
 import ru.yandex.practicum.subscriptions.SubscriptionRepository;
-import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -51,7 +43,6 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static ru.yandex.practicum.event.mapper.EventsMapper.*;
-import static ru.yandex.practicum.event.moderation.ModerationMapper.toModerationCommentShortDto;
 
 @Service
 @Transactional
@@ -601,12 +592,13 @@ public class EventsServiceImpl implements EventsService {
                 Collections.emptyMap());
     }
 
-    public Long getRatingForEvents(List<Long> ids) {
+    private Long getRatingForEvents(List<Long> ids) {
         List<Object[]> rating = rateService.getRatingsForEvents(ids);
 
         return rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
     }
 
+    @Override
     public List<EventShortDto> getRecommendations(long userId, int maxResults) {
         List<AnalyzerClient.ScoredEvent> scored =
                 analyzerClient.getRecommendationsForUser(userId, maxResults);
@@ -636,7 +628,7 @@ public class EventsServiceImpl implements EventsService {
                             categoryService.getCategoryById(event.getCategoryId()),
                             null,
                             null);
-                    dto.setRatings(ratingMap.getOrDefault(s.eventId(), s.score()));
+                   // dto.setRatings(ratingMap.getOrDefault(s.eventId(), s.score()));
                     return dto;
                 })
                 .filter(Objects::nonNull)
