@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package stats.service.collector;
+
+import "stats/message/UserActionProto.proto";
+import "google/protobuf/empty.proto";
+
+service UserActionController {
+  rpc CollectUserAction (UserActionProto) returns (google.protobuf.Empty);
+}
+

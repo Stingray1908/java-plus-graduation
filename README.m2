@@ -1,5 +1,4 @@
-
-
+script для запуска db
 
 docker rm -f mainServ
 docker rm -f statsServ
@@ -14,3 +13,25 @@ docker run -d --name commentServ -e POSTGRES_DB=postgres -e POSTGRES_USER=postgr
 docker run -d --name requestServ -e POSTGRES_DB=postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -p 5433:5432 --restart unless-stopped postgres:15-alpine
 docker run -d --name eventServ -e POSTGRES_DB=event_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5434:5432 --restart unless-stopped postgres:15-alpine
 docker run -d --name userServ -e POSTGRES_DB=user_db -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=12345 -p 5435:5432 --restart unless-stopped postgres:15-alpine
+
+
+script для запуска локальных тестов
+java -jar tester-0.0.1.jar --tester.execution.mode=ANALYZE --tester.execution.output.file-path=./report.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

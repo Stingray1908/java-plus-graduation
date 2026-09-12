@@ -125,4 +125,10 @@ public class RequestsServiceImpl implements RequestsService {
     public List<Object[]> countRequestsByEventIdsAndStatus(List<Long> eventIds, EventState status) {
         return requestRepository.countRequestsByEventIdsAndStatus(eventIds, status);
     }
+
+    @Override
+    public boolean hasConfirmedRequest(long userId, long eventId) {
+        return requestRepository.existsByEventIdAndRequesterIdAndStatus(eventId, userId, EventState.CONFIRMED);
+    }
+
 }

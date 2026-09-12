@@ -91,4 +91,7 @@ public interface EventsService {
 
     List<EventShortDto> getEventShortDtoByIdsWithStats(List<Long> ids);
 
+    void likeEvent(long userId, long eventId);
+
+    List<EventShortDto> getRecommendations(long userId, int maxResults);
 }

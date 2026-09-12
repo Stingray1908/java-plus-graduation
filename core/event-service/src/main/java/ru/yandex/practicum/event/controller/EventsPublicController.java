@@ -7,16 +7,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.CollectorClient;
 import ru.yandex.practicum.StatsClient;
-import ru.yandex.practicum.dto.EndpointHit;
 import ru.yandex.practicum.dto.events.EventFullDto;
 import ru.yandex.practicum.dto.events.EventShortDto;
 import ru.yandex.practicum.enums.EventsSortType;
 import ru.yandex.practicum.event.service.EventsService;
 import ru.yandex.practicum.feigns.event.EventsPublicFeign;
+import stats.service.collector.UserActionProtoOuterClass;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static ru.yandex.practicum.RequestHeaders.X_EWM_USER_ID;
 
 @RestController
 @RequestMapping("/events")
@@ -24,16 +28,28 @@ public class EventsPublicController implements EventsPublicFeign {
 
     private final EventsService eventService;
     private final StatsClient statsClient;
+    private final CollectorClient collectorClient;
 
     @Value("${spring.application.name}")
     private String appName;
 
     public EventsPublicController(
             EventsService eventService,
-            @Qualifier("StatsClientDiscovery") StatsClient statsClient
+            @Qualifier("StatsClientDiscovery") StatsClient statsClient, CollectorClient collectorClient
     ) {
         this.eventService = eventService;
         this.statsClient = statsClient;
+        this.collectorClient = collectorClient;
+    }
+
+    @PutMapping("/{eventId}/like")
+    public ResponseEntity<Void> likeEvent(
+            @RequestHeader(X_EWM_USER_ID) long userId,
+            @PathVariable Long eventId
+    ) {
+        eventService.likeEvent(userId, eventId);
+        sendUserAction(userId, eventId, UserActionProtoOuterClass.ActionTypeProto.ACTION_LIKE);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
@@ -72,13 +88,6 @@ public class EventsPublicController implements EventsPublicFeign {
 
             HttpServletRequest request
     ) {
-        EndpointHit hit = EndpointHit.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
-        statsClient.hit(hit);
 
         List<EventShortDto> events = eventService.getPublishedEvents(
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
@@ -96,21 +105,33 @@ public class EventsPublicController implements EventsPublicFeign {
         return ResponseEntity.ok(event);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{eventId}")
     public ResponseEntity<EventFullDto> getEventById(
-            @PathVariable Long id,
+            @RequestHeader(X_EWM_USER_ID) long userId,
+            @PathVariable Long eventId,
             HttpServletRequest request
     ) {
-        EndpointHit hit = EndpointHit.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
-        statsClient.hit(hit);
 
-        EventFullDto event = eventService.getPublishedEventById(id);
+        sendUserAction(userId, eventId, UserActionProtoOuterClass.ActionTypeProto.ACTION_VIEW);
+        EventFullDto event = eventService.getPublishedEventById(eventId);
         return ResponseEntity.ok(event);
     }
 
+
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<EventShortDto>> getRecommendations(
+            @RequestHeader(X_EWM_USER_ID) long userId,
+            @RequestParam(defaultValue = "10") Integer maxResults
+    ) {
+        List<EventShortDto> recommendations = eventService.getRecommendations(userId, maxResults);
+        return ResponseEntity.ok(recommendations);
+    }
+
+    private void sendUserAction(long userId, long eventId, UserActionProtoOuterClass.ActionTypeProto actionType) {
+        collectorClient.sendUserAction(
+                userId,
+                eventId,
+                actionType,
+                Instant.now());
+    }
 }

@@ -15,6 +15,10 @@
         <module>stats-dto</module>
         <module>stats-client</module>
         <module>stats-server</module>
+        <module>serialization</module>
+        <module>collector</module>
+        <module>aggregator</module>
+        <module>analyzer</module>
     </modules>
 
 </project>

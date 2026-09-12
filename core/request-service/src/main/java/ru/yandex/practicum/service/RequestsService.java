@@ -11,4 +11,7 @@ public interface RequestsService {
             Long userId, Long eventId, EventRequestStatusUpdateRequest request);
 
     List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId);
+
+    boolean hasConfirmedRequest(long userId, long eventId);
+
 }

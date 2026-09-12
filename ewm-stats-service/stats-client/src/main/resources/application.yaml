@@ -1,0 +1,5 @@
+grpc:
+  client:
+    grpcCollector:
+      address: discovery:///collector
+      negotiation-type: plaintext

@@ -6,20 +6,19 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.AnalyzerClient;
 import ru.yandex.practicum.StatsClient;
 import ru.yandex.practicum.categories.service.CategoryService;
-import ru.yandex.practicum.categories.service.CategoryServiceImpl;
 import ru.yandex.practicum.dto.ViewStats;
 import ru.yandex.practicum.dto.categories.CategoryDto;
 import ru.yandex.practicum.dto.events.*;
-import ru.yandex.practicum.dto.events.moderation.ModerationCommentShortDto;
-import ru.yandex.practicum.dto.user.UserDto;
 import ru.yandex.practicum.dto.user.UserShortDto;
 import ru.yandex.practicum.enums.EventState;
 import ru.yandex.practicum.enums.EventsSortType;
@@ -29,16 +28,13 @@ import ru.yandex.practicum.error.exception.EventCreationRuleException;
 import ru.yandex.practicum.error.exception.ForbiddenActionException;
 import ru.yandex.practicum.error.exception.NotFoundException;
 import ru.yandex.practicum.event.entity.Event;
-import ru.yandex.practicum.event.mapper.EventsMapper;
 import ru.yandex.practicum.event.moderation.ModerationComment;
-import ru.yandex.practicum.event.moderation.ModerationCommentRepository;
 import ru.yandex.practicum.event.moderation.ModerationService;
 import ru.yandex.practicum.event.repo.EventsRepository;
 import ru.yandex.practicum.feigns.request.RequestAdditionalFeign;
 import ru.yandex.practicum.feigns.user.UserAdminFeign;
 import ru.yandex.practicum.rating.service.RateServiceImpl;
 import ru.yandex.practicum.subscriptions.SubscriptionRepository;
-import ru.yandex.practicum.subscriptions.SubscriptionServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -47,7 +43,6 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static ru.yandex.practicum.event.mapper.EventsMapper.*;
-import static ru.yandex.practicum.event.moderation.ModerationMapper.toModerationCommentShortDto;
 
 @Service
 @Transactional
@@ -63,6 +58,7 @@ public class EventsServiceImpl implements EventsService {
     private final RequestAdditionalFeign requestAdditionalFeign;
     private final ModerationService moderationService;
     private final RateServiceImpl rateService;
+    private final AnalyzerClient analyzerClient;
 
     public EventsServiceImpl(SubscriptionRepository subscriptionRepository,
                              UserAdminFeign userAdminFeign,
@@ -72,7 +68,8 @@ public class EventsServiceImpl implements EventsService {
                              EntityManager entityManager,
                              RequestAdditionalFeign requestAdditionalFeign,
                              ModerationService moderationService,
-                             RateServiceImpl rateService) {
+                             RateServiceImpl rateService,
+                             AnalyzerClient analyzerClient) {
         this.subscriptionRepository = subscriptionRepository;
         this.userAdminFeign = userAdminFeign;
         this.categoryService = categoryService;
@@ -82,6 +79,7 @@ public class EventsServiceImpl implements EventsService {
         this.requestAdditionalFeign = requestAdditionalFeign;
         this.moderationService = moderationService;
         this.rateService = rateService;
+        this.analyzerClient = analyzerClient;
     }
 
     @Override
@@ -140,6 +138,25 @@ public class EventsServiceImpl implements EventsService {
                 getRatingsMap(uniqueIds),
                 getViewsMap(uniqueIds));
     }
+
+    @Override
+    public void likeEvent(long userId, long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new BadRequestException("Event must be published");
+        }
+
+        if (event.getEventDate().isAfter(LocalDateTime.now())) {
+            throw new BadRequestException ("Event has not yet taken place");
+        }
+
+        if (!requestAdditionalFeign.hasConfirmedRequest(userId, eventId)) {
+            throw new BadRequestException ("User has no confirmed registration for this event");
+        }
+    }
+
 
     @Override
     public EventFullDto saveEvent(NewEventDto newEventDto, Long userId) {
@@ -575,11 +592,67 @@ public class EventsServiceImpl implements EventsService {
                 Collections.emptyMap());
     }
 
-    public Long getRatingForEvents(List<Long> ids) {
+    private Long getRatingForEvents(List<Long> ids) {
         List<Object[]> rating = rateService.getRatingsForEvents(ids);
 
         return rating.isEmpty() ? 0L : (Long) rating.getFirst()[1];
     }
+
+    @Override
+    public List<EventShortDto> getRecommendations(long userId, int maxResults) {
+        List<AnalyzerClient.ScoredEvent> scored =
+                analyzerClient.getRecommendationsForUser(userId, maxResults);
+
+        if (scored.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> eventIds = scored.stream()
+                .map(AnalyzerClient.ScoredEvent::eventId)
+                .toList();
+
+        List<Event> events = eventRepository.findAllById(eventIds);
+
+        Map<Long, Event> eventMap = events.stream()
+                .collect(Collectors.toMap(Event::getId, e -> e));
+
+        Map<Long, Double> ratingMap = buildRatingMap(eventIds);
+
+        return scored.stream()
+                .map(s -> {
+                    Event event = eventMap.get(s.eventId());
+                    if (event == null) return null;
+                    EventShortDto dto = toShortEventDto(event,
+                            getConfirmedRequestsForEvent(event.getId()),
+                            getUserById(userId),
+                            categoryService.getCategoryById(event.getCategoryId()),
+                            null,
+                            null);
+                    return dto;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /**
+     * Запрашивает рейтинги у анализатора одним gRPC-запросом.
+     * Возвращает мапу: eventId -> score.
+     */
+    private Map<Long, Double> buildRatingMap(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<AnalyzerClient.ScoredEvent> counts =
+                analyzerClient.getInteractionsCount(eventIds);
+
+        return counts.stream()
+                .collect(Collectors.toMap(
+                        AnalyzerClient.ScoredEvent::eventId,
+                        AnalyzerClient.ScoredEvent::score
+                ));
+    }
+
 
     private Map<Long, Long> getViewsMap(List<Long> events) {
         if (events.isEmpty()) return Map.of();
