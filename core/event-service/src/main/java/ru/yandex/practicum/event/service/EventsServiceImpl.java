@@ -628,7 +628,6 @@ public class EventsServiceImpl implements EventsService {
                             categoryService.getCategoryById(event.getCategoryId()),
                             null,
                             null);
-                   // dto.setRatings(ratingMap.getOrDefault(s.eventId(), s.score()));
                     return dto;
                 })
                 .filter(Objects::nonNull)
